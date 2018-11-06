@@ -17,6 +17,49 @@ namespace WpfApp1
 
     public partial class MainWindow : System.Windows.Window
     {
+        public NeuralNetwork network;
+
+        //neuron's size in visualisation
+        public const float K = 0.02f;
+        
+        //neuron's coordinates in visualisation
+        public static float X_visual { get; set; } 
+        public static float Y_visual { get; set; }
+
+        public static List<OpenGL.Vertex3f> _Position { get; set; } = new List<OpenGL.Vertex3f> { };
+        public static List<ushort> _TriangleEdges { get; set; } = new List<ushort> { };
+        public static List<ushort> _ConnEdges { get; set; } = new List<ushort> { };
+        public static List<float> _ArrayColor { get; set; } = new List<float> { };
+        public static uint _TriangleVao { get; set; }
+        public static uint _ConnEdgesBuffer { get; set; }
+        public static uint _TriangleVerticesBuffer { get; set; }
+        public static uint _TriangleEdgesBuffer { get; set; }
+        public static uint _ColorBuffer { get; set; }
+
+        //image to open
+        public static System.Drawing.Bitmap _image { get; set; }
+        
+        public static uint _Texture { get; set; }
+
+        //Image ratio for resize purposes (newly opened image)
+        public static float _Ratio { get; set; }
+
+        //gl client's window related height (vph) & width (vpw)
+        public static int Vpw { get; set; }
+        public static int Vph { get; set; } 
+
+        public static uint _tframebuffer { get; set; }
+
+        //part of the screen that isn't filled with any content (only 1 out of 2 frames with the same width)
+        public static float _frame { get; set; }
+
+        public static float _pixelSize { get; set; }
+
+        /*main input vector (the sequence of rgb values placed one after another, 
+        _Input[4*ind] being the color value for the blue color, _Input[4*ind]+1 == green, _Input[4*ind]+2 == red)*/
+        public static byte[] MainInput { get; set; } 
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -46,7 +89,9 @@ namespace WpfApp1
 
             int vpx = 0;
             int vpy = 0;
-            Vpw = senderControl.ClientSize.Width;  //actual width/height of render area
+
+            //actual width/height of render area
+            Vpw = senderControl.ClientSize.Width;  
             Vph = senderControl.ClientSize.Height;
 
             Gl.Viewport(vpx, vpy, Vpw, Vph);
@@ -129,9 +174,8 @@ namespace WpfApp1
 
             ushort[] _ElementArr = _TriangleEdges.ToArray();
             Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
-            Gl.BufferData(BufferTarget.ElementArrayBuffer,
-                (uint)(2 * _ElementArr.Length), _ElementArr,
-                BufferUsage.StreamDraw);
+            Gl.BufferData(BufferTarget.ElementArrayBuffer, (uint)(2 * _ElementArr.Length),
+                _ElementArr, BufferUsage.StreamDraw);
 
             float[] _Color = _ArrayColor.ToArray();
             Gl.BindBuffer(BufferTarget.ArrayBuffer, _ColorBuffer);
@@ -142,10 +186,7 @@ namespace WpfApp1
             Gl.ColorPointer(3, OpenGL.ColorPointerType.Float, 0, IntPtr.Zero);
            
             Gl.DrawElements(PrimitiveType.Triangles,
-               _ElementArr.Length,
-               DrawElementsType.UnsignedShort,
-               IntPtr.Zero
-             );
+               _ElementArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
 
             ushort[] _ConnElArr = _ConnEdges.ToArray();
             Gl.BindBuffer(BufferTarget.ElementArrayBuffer, _ConnEdgesBuffer);
@@ -153,10 +194,7 @@ namespace WpfApp1
                 (uint)(2 * _ConnElArr.Length), _ConnElArr, BufferUsage.StreamDraw);
 
             Gl.DrawElements(PrimitiveType.Lines,
-               _ConnElArr.Length,
-               DrawElementsType.UnsignedShort,
-               IntPtr.Zero
-             );
+               _ConnElArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
             
         } //-->GlRender()
 
@@ -213,29 +251,6 @@ namespace WpfApp1
             GlRender();
         } //-->CreateTriangleVertexArray()
 
-        public NeuralNetwork network;
-        public const float K = 0.02f; //neuron's size in visualisation
-        public static float X_visual { get; set; } //neuron's coordinates in visualisation
-        public static float Y_visual { get; set; } 
-        public static List<OpenGL.Vertex3f> _Position { get; set; } = new List<OpenGL.Vertex3f> { }; 
-        public static List<ushort> _TriangleEdges { get; set; } = new List<ushort> { };
-        public static List<ushort> _ConnEdges { get; set; } = new List<ushort> { };
-        public static List<float> _ArrayColor { get; set; } = new List<float> { };
-        public static uint _TriangleVao { get; set; }
-        public static uint _ConnEdgesBuffer { get; set; }
-        public static uint _TriangleVerticesBuffer { get; set; }
-        public static uint _TriangleEdgesBuffer { get; set; }
-        public static uint _ColorBuffer { get; set; }
-        public static System.Drawing.Bitmap _image { get; set; } //opened image
-        public static uint _Texture { get; set; }
-        public static float _Ratio { get; set; } //Image ratio for resize purposes (newly opened image)
-        public static int Vpw { get; set; }
-        public static int Vph { get; set; } //gl client's window related height (vph) & width (vpw)
-        public static uint _tframebuffer { get; set; }
-        public static float _frame { get; set; } //part of the screen that isn't filled with any content (only 1 out of 2 frames with the same width)
-        public static float _pixelSize { get; set; }
-        public static byte[] MainInput { get; set; } //main input vector (the sequence of rgb values placed one after another, _Input[4*ind] being the color value of blue color, _Input[4*ind]+1 — green, _Input[4*ind]+2 — red)
-
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
             Close();
@@ -244,7 +259,7 @@ namespace WpfApp1
         private void Train(object sender, RoutedEventArgs e)
         {
             network = new NeuralNetwork();
-            //different example of how to get input values but instead of reading image here we have numerical values
+            //example on how to get the input values (but instead of reading image we have numerical values)
             /* var dataset = File.ReadAllLines(@"C:\Temp\2.csv");
             //------------------> 
             var allInputs = dataset.Select(x => x.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)).ToArray();
@@ -314,7 +329,6 @@ namespace WpfApp1
                 {
                     MainWindow._Ratio = ((float)MainWindow._image.Width / (float)MainWindow._image.Height);
                     _pixelSize = (float)Vph / _image.Height;
-
                 }
                 else
                 {
@@ -390,8 +404,13 @@ namespace WpfApp1
             _connections.AddFirst(_conn);
 
             // Debug
-            Connection _conn2 = new Connection(ref NeursNum, 2, _connections.Last.Value._neur2.Neur_X, _connections.Last.Value._neur2.Neur_Y);//////////////////////adding new neuron...
-            _connections.Last.Value._neur2.Synapses.Add(new NumWeights(1, _conn2._neur1.NeurNum, _conn2._neur1.Neur_X, _conn2._neur1.Neur_Y));
+            //////////////////////adding new neuron
+            Connection _conn2 = new Connection(ref NeursNum, 2, _connections.Last.Value._neur2.Neur_X,
+                _connections.Last.Value._neur2.Neur_Y);
+
+            _connections.Last.Value._neur2.Synapses.Add(new NumWeights(1, _conn2._neur1.NeurNum, _conn2._neur1.Neur_X, 
+                _conn2._neur1.Neur_Y));
+
             _connections.AddLast(_conn2);
          
             Lambda = 20;
@@ -467,13 +486,17 @@ namespace WpfApp1
 
             //2. Searching for nearest value in _Input vector (this way we can calculate the distance between the node and the value)
             Thread Th1 = new Thread(new ThreadStart(Winner.ProcessDistance));
-            //setting direction of search to forward
+            
+            //setting the direction of search to forward
             Winner.Forward = true;
-            //starting forward search in separate thread to make parallel execution of search in both directions  
+
+            //starting forward search in a separate thread in order to create a parallel search execution in both directions  
             Th1.Start();
+            
             //changing direction of search to backwards
             Winner.Forward = false;
-            //starting backward search in main thread
+            
+            //starting backward search in the main thread
             Winner.ProcessDistance();
 
             //3. Changing winner's local error
@@ -502,10 +525,13 @@ namespace WpfApp1
                     {
                         // Increasing Y by the amount of rows
                         FindNeuron(Id).Neur_Y += (int)IncValL - 1;
+                        
                         // Reducing Delta value by the amount of rows for further increase of X value
                         FindNeuron(Id).Neur_X += FindNeuron(Id).Delta - MainWindow.Vpw * IncValL;
+                        
                         // Assigning new Index value due to change in coordinates
                         FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                        
                         // Changing coordinates for visualisation
                         FindNeuron(Id).ChangePosition();
                     }
@@ -513,8 +539,10 @@ namespace WpfApp1
                     {
                         // Increasing X value by the amount of Delta value
                         FindNeuron(Id).Neur_X += FindNeuron(Id).Delta;
+                        
                         // Assigning new Index value due to change in coordinates
                         FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                        
                         // Changing coordinates for visualisation
                         FindNeuron(Id).ChangePosition();
                     }
@@ -528,10 +556,13 @@ namespace WpfApp1
                     {
                         // Decreasing Y by the amount of rows
                         FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X);
+                        
                         // Reducing Delta value by the amount of rows for further decrease of X value
                         FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X));
+                       
                         // Assigning new Index value due to change in coordinates
                         FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                        
                         // Changing coordinates for visualisation
                         FindNeuron(Id).ChangePosition();
                     }
@@ -539,8 +570,10 @@ namespace WpfApp1
                     {
                         // Decreasing X value by the amount of Delta value
                         FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta;
+                        
                         // Assigning new Index value due to change in coordinates
                         FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                        
                         // Changing coordinates for visualisation
                         FindNeuron(Id).ChangePosition();
                     }
@@ -584,6 +617,7 @@ namespace WpfApp1
             
             //adding output info to neur1
             _neur1.Axons.Add(new NumWeights(1, _neur2.NeurNum , TempX_2, TempY_2));
+            
             //adding input info to neur2
             _neur2.Synapses.Add(new NumWeights(1, _neur1.NeurNum, TempX_1, TempY_1));
 
@@ -749,7 +783,7 @@ namespace WpfApp1
              ((1.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f);
             MainWindow._Position[PosInd + 2] = new OpenGL.Vertex3f(((1.0f * MainWindow.K) + MainWindow.X_visual),
              ((0.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f);
-           
+
             //System.Threading.Thread.Sleep(1000);
             //Gl.Clear(ClearBufferMask.ColorBufferBit);
             //Gl.BindVertexArray(MainWindow._TriangleVao);
