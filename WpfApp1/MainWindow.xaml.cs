@@ -80,7 +80,6 @@ namespace WpfApp1
             Gl.MatrixMode(MatrixMode.Modelview);
             Gl.LoadIdentity();
             CreateResources();
-
         }
 
         private void GlControl_Render(object sender, OpenGL.GlControlEventArgs e)
@@ -197,6 +196,25 @@ namespace WpfApp1
                _ConnElArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
             
         } //-->GlRender()
+
+        public static void GlUpdateBuffers()
+        {
+            Vertex3f[] _PositionArr = _Position.ToArray();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._TriangleVerticesBuffer);
+            Gl.BufferSubData(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(Vertex3f.Size * _PositionArr.Length), _PositionArr);
+
+            ushort[] _ElementArr = _TriangleEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
+            Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ElementArr.Length), _ElementArr);
+
+            float[] _Color = _ArrayColor.ToArray();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, _ColorBuffer);
+            Gl.BufferSubData(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(sizeof(float) * (_Color.Length)), _Color);
+
+            ushort[] _ConnElArr = _ConnEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, _ConnEdgesBuffer);
+            Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ConnElArr.Length), _ConnElArr);
+        }
 
         public static uint GenTexture()
         {
@@ -771,7 +789,7 @@ namespace WpfApp1
 
         }
 
-        //change visualisation in OpenGL if current location has changed           ///////////////////////////////WIP
+        //change visualisation if current location has changed           ///////////////////////////////WIP
         public void ChangePosition()
         {
             MainWindow.X_visual = Neur_X;
@@ -787,8 +805,9 @@ namespace WpfApp1
             //System.Threading.Thread.Sleep(1000);
             //Gl.Clear(ClearBufferMask.ColorBufferBit);
             //Gl.BindVertexArray(MainWindow._TriangleVao);
-
-            MainWindow.GlRender();
+           
+            //updating gl buffers in order to redraw nodes' positions
+            MainWindow.GlUpdateBuffers();
         }
 
         //for first winner find the nearest value in MainInput vector and update local error 
