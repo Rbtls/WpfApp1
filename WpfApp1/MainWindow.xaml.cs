@@ -30,11 +30,27 @@ namespace WpfApp1
         public static List<ushort> _TriangleEdges { get; set; } = new List<ushort> { };
         public static List<ushort> _ConnEdges { get; set; } = new List<ushort> { };
         public static List<float> _ArrayColor { get; set; } = new List<float> { };
+
         public static uint _TriangleVao { get; set; }
         public static uint _ConnEdgesBuffer { get; set; }
         public static uint _TriangleVerticesBuffer { get; set; }
         public static uint _TriangleEdgesBuffer { get; set; }
         public static uint _ColorBuffer { get; set; }
+
+        public static Vertex3f[] _PositionArr { get; set; }
+        public static ushort[] _ElementArr { get; set; }
+        public static float[] _Color { get; set; }
+        public static ushort[] _ConnElArr { get; set; }
+        public static bool Change_pos { get; set; } = false;
+
+        public static int debug1;
+        public static int debug2;
+        public static int debug3;
+        public static int debug4;
+        public static int debug5;
+        public static int debug6;
+        public static int debug7;
+        public static int debug8;
 
         //image to open
         public static System.Drawing.Bitmap _image { get; set; }
@@ -94,9 +110,12 @@ namespace WpfApp1
             Vph = senderControl.ClientSize.Height;
 
             Gl.Viewport(vpx, vpy, Vpw, Vph);
-            Gl.Clear(ClearBufferMask.ColorBufferBit);
 
-            Gl.BindVertexArray(_TriangleVao);
+            if (Change_pos == true)
+            {
+                GlUpdateBuffers();
+                Change_pos = false;
+            }
 
             GlRender();
         }
@@ -162,59 +181,126 @@ namespace WpfApp1
                     Gl.Disable(EnableCap.Texture2d);
                 }
             }
-            
-            Vertex3f[] _PositionArr = _Position.ToArray();
+
+            _PositionArr = _Position.ToArray();
+            _ElementArr = _TriangleEdges.ToArray();
+            _Color = _ArrayColor.ToArray();
+            _ConnElArr = _ConnEdges.ToArray();
+
             Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._TriangleVerticesBuffer);
             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(Vertex3f.Size *
-            _PositionArr.Length), _PositionArr, BufferUsage.StreamDraw);
+                _PositionArr.Length), _PositionArr, BufferUsage.DynamicDraw);
 
             Gl.EnableVertexAttribArray(0);
             Gl.VertexAttribPointer(0, 3, VertexAttribType.Float, false, 0, IntPtr.Zero);
 
-            ushort[] _ElementArr = _TriangleEdges.ToArray();
             Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
             Gl.BufferData(BufferTarget.ElementArrayBuffer, (uint)(2 * _ElementArr.Length),
-                _ElementArr, BufferUsage.StreamDraw);
-
-            float[] _Color = _ArrayColor.ToArray();
-            Gl.BindBuffer(BufferTarget.ArrayBuffer, _ColorBuffer);
+                _ElementArr, BufferUsage.DynamicDraw);
+            
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._ColorBuffer);
             Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(sizeof(float) * (_Color.Length)),
-                _Color, BufferUsage.StreamDraw);
+                _Color, BufferUsage.DynamicDraw);
 
             Gl.EnableClientState(EnableCap.ColorArray);
             Gl.ColorPointer(3, OpenGL.ColorPointerType.Float, 0, IntPtr.Zero);
-           
+
             Gl.DrawElements(PrimitiveType.Triangles,
                _ElementArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
 
-            ushort[] _ConnElArr = _ConnEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, 0);
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+
             Gl.BindBuffer(BufferTarget.ElementArrayBuffer, _ConnEdgesBuffer);
-            Gl.BufferData(BufferTarget.ElementArrayBuffer,
-                (uint)(2 * _ConnElArr.Length), _ConnElArr, BufferUsage.StreamDraw);
+            Gl.BufferData(BufferTarget.ElementArrayBuffer, (uint)(2 * _ConnElArr.Length),
+                _ConnElArr, BufferUsage.DynamicDraw);
 
             Gl.DrawElements(PrimitiveType.Lines,
                _ConnElArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
-            
+
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, 0);
+
         } //-->GlRender()
 
         public static void GlUpdateBuffers()
         {
-            Vertex3f[] _PositionArr = _Position.ToArray();
+            /*_PositionArr = _Position.ToArray();
             Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._TriangleVerticesBuffer);
             Gl.BufferSubData(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(Vertex3f.Size * _PositionArr.Length), _PositionArr);
 
-            ushort[] _ElementArr = _TriangleEdges.ToArray();
-            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
-            Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ElementArr.Length), _ElementArr);
-
-            float[] _Color = _ArrayColor.ToArray();
+            _Color = _ArrayColor.ToArray();
             Gl.BindBuffer(BufferTarget.ArrayBuffer, _ColorBuffer);
             Gl.BufferSubData(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(sizeof(float) * (_Color.Length)), _Color);
 
-            ushort[] _ConnElArr = _ConnEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, 0);
+
+            _ElementArr = _TriangleEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
+            Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ElementArr.Length), _ElementArr);
+
+            _ConnElArr = _ConnEdges.ToArray();
             Gl.BindBuffer(BufferTarget.ElementArrayBuffer, _ConnEdgesBuffer);
             Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ConnElArr.Length), _ConnElArr);
-        }
+
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, 0);*/
+           /* Gl.Clear(ClearBufferMask.ColorBufferBit);
+            Gl.Clear(ClearBufferMask.DepthBufferBit);
+            Gl.Clear(ClearBufferMask.StencilBufferBit);*/
+
+            _PositionArr = _Position.ToArray();
+            _ElementArr = _TriangleEdges.ToArray();
+            _Color = _ArrayColor.ToArray();
+            _ConnElArr = _ConnEdges.ToArray();
+
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._TriangleVerticesBuffer);
+            Gl.ClearBufferData(BufferTarget.ArrayBuffer, InternalFormat.Alpha12, PixelFormat.Alpha, PixelType.Bitmap, _PositionArr);
+            //Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(Vertex3f.Size * _PositionArr.Length), null, BufferUsage.DynamicDraw);
+            //Gl.InvalidateBufferData(MainWindow._TriangleVerticesBuffer);
+            //Gl.MapBufferRange(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(Vertex3f.Size * _PositionArr.Length), );
+           // Gl.BufferSubData(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(Vertex3f.Size * _PositionArr.Length), _PositionArr);
+
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
+            Gl.ClearBufferData(BufferTarget.ArrayBuffer, InternalFormat.Alpha12, PixelFormat.Alpha, PixelType.Bitmap, _ElementArr);
+            //Gl.BufferData(BufferTarget.ElementArrayBuffer, (uint)(2 * _ElementArr.Length), null, BufferUsage.DynamicDraw);
+            //Gl.InvalidateBufferData(MainWindow._TriangleEdgesBuffer);
+            // Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ElementArr.Length), _ElementArr);
+
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._ColorBuffer);
+            Gl.ClearBufferData(BufferTarget.ArrayBuffer, InternalFormat.Alpha12, PixelFormat.Alpha, PixelType.Bitmap, _Color);
+            //Gl.BufferData(BufferTarget.ArrayBuffer, (uint)(sizeof(float) * (_Color.Length)), null, BufferUsage.DynamicDraw);
+            //Gl.InvalidateBufferData(MainWindow._ColorBuffer);
+            //  Gl.BufferSubData(BufferTarget.ArrayBuffer, System.IntPtr.Zero, (uint)(sizeof(float) * (_Color.Length)), _Color);
+
+            //Gl.DrawElements(PrimitiveType.Triangles, _ElementArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
+
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._ConnEdgesBuffer);
+            Gl.ClearBufferData(BufferTarget.ArrayBuffer, InternalFormat.Alpha12, PixelFormat.Alpha, PixelType.Bitmap, _ConnElArr);
+            //Gl.BufferData(BufferTarget.ElementArrayBuffer, (uint)(2 * _ConnElArr.Length), null, BufferUsage.DynamicDraw);
+            //Gl.InvalidateBufferData(MainWindow._ConnEdgesBuffer);
+            //  Gl.BufferSubData(BufferTarget.ElementArrayBuffer, System.IntPtr.Zero, (uint)(2 * _ConnElArr.Length), _ConnElArr);
+
+            //Gl.DrawElements(PrimitiveType.Lines, _ConnElArr.Length, DrawElementsType.UnsignedShort, IntPtr.Zero);
+
+            /*_PositionArr = _Position.ToArray();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, MainWindow._TriangleVerticesBuffer);
+            //Gl.InvalidateBufferData(MainWindow._TriangleVerticesBuffer);
+            
+            _ElementArr = _TriangleEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, MainWindow._TriangleEdgesBuffer);
+            //Gl.InvalidateBufferData(MainWindow._TriangleEdgesBuffer);
+
+
+            _Color = _ArrayColor.ToArray();
+            Gl.BindBuffer(BufferTarget.ArrayBuffer, _ColorBuffer);
+            //Gl.InvalidateBufferData(MainWindow._ColorBuffer);
+
+
+            _ConnElArr = _ConnEdges.ToArray();
+            Gl.BindBuffer(BufferTarget.ElementArrayBuffer, _ConnEdgesBuffer);
+            //Gl.InvalidateBufferData(MainWindow._ConnEdgesBuffer);*/
+
+
+        } //-->GlUpdateBuffers()
 
         public static uint GenTexture()
         {
@@ -266,7 +352,8 @@ namespace WpfApp1
             _TriangleEdgesBuffer = Gl.GenBuffer();
             _ColorBuffer = Gl.GenBuffer();
             _ConnEdgesBuffer = Gl.GenBuffer();
-            GlRender();
+
+           // GlRender();
         } //-->CreateTriangleVertexArray()
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -276,7 +363,6 @@ namespace WpfApp1
 
         private void Train(object sender, RoutedEventArgs e)
         {
-            network = new NeuralNetwork();
             //example on how to get the input values (but instead of reading image we have numerical values)
             /* var dataset = File.ReadAllLines(@"C:\Temp\2.csv");
             //------------------> 
@@ -289,13 +375,13 @@ namespace WpfApp1
                 Answer = x[0],
                 Inputs = NormalizeInput(x.Skip(1).ToArray())
             }).ToArray(); */
-            
+
             System.Drawing.Imaging.BitmapData _BtData = MainWindow._image.LockBits(new System.Drawing.Rectangle(0, 0, MainWindow._image.Width, MainWindow._image.Height),
                 System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             IntPtr t = _BtData.Scan0;
             Gl.ReadPixels(0, 0, 1, 1, PixelFormat.Rgba, PixelType.UnsignedByte, t);
             Gl.BindFramebuffer(FramebufferTarget.Framebuffer, 0);
-            
+
             // Declare an array to hold the bytes of the bitmap. This is also the input vector of NN.
             int bytes = Math.Abs(_BtData.Stride) * _image.Height;
             MainInput = new byte[bytes];
@@ -303,6 +389,9 @@ namespace WpfApp1
             // Copy the RGB values into the array.
             System.Runtime.InteropServices.Marshal.Copy(t, MainInput, 0, bytes);
 
+            network = new NeuralNetwork();
+
+            /* // Commented due to occasional threading exception
             // Calculating neuron's index value based on neuron's X and Y coordinates used in visualisation
             int ind = CalculateIndex(X_visual, Y_visual);
 
@@ -312,18 +401,27 @@ namespace WpfApp1
             // Debug info to show rgb values of the last added neuron
             int blue = (int)MainInput[4*ind];
             int green = (int)MainInput[(4*ind)+1];
-            int red = (int)MainInput[(4*ind)+2];
+            int red = (int)MainInput[(4*ind)+2]; */
 
             MainWindow._image.UnlockBits(_BtData);
-            
+
             TextBox1.Text += $"Number of neurons = {network.GetNNnum()} " + "\r\n";
-            TextBox1.Text += $"Length of bytes = {MainInput.Length} " + "\r\n";
-            TextBox1.Text += $"index = {ind} " + "\r\n";
-            TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
-            TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
-            TextBox1.Text += $"#2 pixel red = {red} " + "\r\n";
+            TextBox1.Text += $"Length of bytes = {MainInput.Length} " + "\r\n" + "\r\n";
+            TextBox1.Text += $"pixel#1 X = { _PositionArr[3].x} " + "\r\n";
+            TextBox1.Text += $"pixel#1 Y = { _PositionArr[3].y} " + "\r\n";
+            TextBox1.Text += $"pixel#2 X = { _PositionArr[6].x} " + "\r\n";
+            TextBox1.Text += $"pixel#2 Y = { _PositionArr[6].y} " + "\r\n";
+            TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
+            TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
+            TextBox1.Text += $"debug1 = {debug1} " + "\r\n";
+            TextBox1.Text += $"debug2 = {debug2} " + "\r\n";
+            TextBox1.Text += $"debug3 = {debug3} " + "\r\n";
+            TextBox1.Text += $"debug index = {debug4} " + "\r\n";
+            //TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
+            //TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
+            /* TextBox1.Text += $"#2 pixel red = {red} " + "\r\n";
             TextBox1.Text += $"#2 pixel green = {green} " + "\r\n";
-            TextBox1.Text += $"#2 pixel blue = {blue} " + "\r\n";
+            TextBox1.Text += $"#2 pixel blue = {blue} " + "\r\n"; */
 
             //TextBox1.Text += $"winner.id = {network.Winner.NeurNum}" + "\r\n";
             //TextBox1.Text += $"winner.error = {network.Winner.Error}" + "\r\n";
@@ -388,505 +486,20 @@ namespace WpfApp1
         private void Testbtn(object sender, RoutedEventArgs e)
         {
             network.ProcessVector();
-            TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
-            TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
+            //TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
+            //TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
+            TextBox1.Text += "\r\n";
+            TextBox1.Text += $"pixel#1 X = { _PositionArr[3].x} " + "\r\n";
+            TextBox1.Text += $"pixel#1 Y = { _PositionArr[3].y} " + "\r\n";
+            TextBox1.Text += $"pixel#2 X = { _PositionArr[6].x} " + "\r\n";
+            TextBox1.Text += $"pixel#2 Y = { _PositionArr[6].y} " + "\r\n";
+            TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
+            TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
+            TextBox1.Text += $"debug5 = {debug5} " + "\r\n";
+            TextBox1.Text += $"debug6 = {debug6} " + "\r\n";
+            TextBox1.Text += $"debug7 = {debug7} " + "\r\n";
+            TextBox1.Text += $"debug index = {debug8} " + "\r\n";
         }
     } //-->MainWindow
-
-    public class NeuralNetwork
-    {
-        //Main number of neurons
-        private long NeursNum;
-        public int Error_min { get; set; }
-        public Neuron Winner { get; set; }
-        public Neuron Secondwinner { get; set; }
-        public int Iteration_number {get; set;}
-
-        public int Max_nodes { get; set; }
-        public int Lambda { get; set; }
-        public int Age_max { get; set; }
-        //alpha & beta are used to adapt errors
-        public float Alpha { get; set; }
-        public float Beta { get; set; }                         //////////////////////
-        //eps_w & eps_n are used to adapt weights
-        public static float Eps_w { get; set; }
-        public static float Eps_n { get; set; }
-
-        public LinkedList<Connection> _connections = new LinkedList<Connection>();
-
-        public NeuralNetwork()
-        {
-            // Creating new connection
-            NeursNum = 0;
-            Connection _conn = new Connection(ref NeursNum);
-            _connections.AddFirst(_conn);
-
-            // Debug
-            //////////////////////adding new neuron
-            Connection _conn2 = new Connection(ref NeursNum, 2, _connections.Last.Value._neur2.Neur_X,
-                _connections.Last.Value._neur2.Neur_Y);
-
-            _connections.Last.Value._neur2.Synapses.Add(new NumWeights(1, _conn2._neur1.NeurNum, _conn2._neur1.Neur_X, 
-                _conn2._neur1.Neur_Y));
-
-            _connections.AddLast(_conn2);
-         
-            Lambda = 20;
-            Age_max = 15;
-            Alpha = 0.5f;
-            Eps_w = 0.05f;
-            Eps_n = 0.0006f;
-            Max_nodes = 100;
-        }
-
-        //set index in input vector (the space occupied by neuron)  //////////////////////////Work In Progress/////////
-        public void SetInd(int ConnInd, int ind)
-        {
-          _connections.ElementAt(ConnInd)._neur1.NeurIndInput = ind;
-        }
-
-        public long GetNNnum()
-        {
-            return NeursNum;
-        }
-
-        private Neuron FindNeuron(long uid)
-        {
-            foreach(Connection _conn in _connections)
-            {
-                if (_conn._neur1.NeurNum == uid)
-                {
-                    return _conn._neur1;
-                }
-                else if(_conn._neur2.NeurNum == uid)
-                {
-                    return _conn._neur2;
-                }
-            }
-            return null;
-        }
-
-        private void FindWinners() ////////////////Work In Progress////////////
-        {
-            if (Error_min == 0)
-            {
-                Error_min = _connections.ElementAt(0)._neur1.Error;
-                Winner = _connections.ElementAt(0)._neur1;
-                Secondwinner = Winner;
-            } 
-            foreach (Connection _conn in _connections)
-            {
-                if (_conn._neur1.Error < Error_min)
-                {
-                    Secondwinner = Winner;
-                    Error_min = _conn._neur1.Error;
-                    Winner = _conn._neur1;
-                }
-                else if (_conn._neur2 != null)
-                {
-                    if (_conn._neur2.Error < Error_min)
-                    {
-                        Secondwinner = Winner;
-                        Error_min = _conn._neur2.Error;
-                        Winner = _conn._neur2;
-                    }
-                }
-            }
-        }
-
-        public void ProcessVector()
-        {
-            //0. Increase iteration number
-            Iteration_number++;
-
-            //1.
-            FindWinners();
-
-            //2. Searching for nearest value in _Input vector (this way we can calculate the distance between the node and the value)
-            Thread Th1 = new Thread(new ThreadStart(Winner.ProcessDistance));
-            
-            //setting the direction of search to forward
-            Winner.Forward = true;
-
-            //starting forward search in a separate thread in order to create a parallel search execution in both directions  
-            Th1.Start();
-            
-            //changing direction of search to backwards
-            Winner.Forward = false;
-            
-            //starting backward search in the main thread
-            Winner.ProcessDistance();
-
-            //3. Changing winner's local error
-            Winner.E += Winner.Error;
-            
-            //4. Move winner and all of it's topological neighbours towards _Input vector using Delta value (calculated with Eps_w)
-            Adapt_weights(Winner.NeurNum);
-
-            //5. 
-            
-        }
-
-        // Change neuron's and it's neighbours' positions  /////////////////////////////////WIP
-        public void Adapt_weights(long Id/*id of neuron*/)
-        {
-            for (int x = 0; x < 10; x++)
-            {
-                // If neuron's position is to the left of the input array increase coordinates' values by the amount of Delta value
-                if (FindNeuron(Id).Left == true) //neuron's X&Y is < than input
-                {
-                    // Calculate the increase value
-                    float IncValL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / MainWindow.Vpw;
-
-                    // When Delta is out of the X limit, increase Y...
-                    if (IncValL > 1)
-                    {
-                        // Increasing Y by the amount of rows
-                        FindNeuron(Id).Neur_Y += (int)IncValL - 1;
-                        
-                        // Reducing Delta value by the amount of rows for further increase of X value
-                        FindNeuron(Id).Neur_X += FindNeuron(Id).Delta - MainWindow.Vpw * IncValL;
-                        
-                        // Assigning new Index value due to change in coordinates
-                        FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
-                        
-                        // Changing coordinates for visualisation
-                        FindNeuron(Id).ChangePosition();
-                    }
-                    else
-                    {
-                        // Increasing X value by the amount of Delta value
-                        FindNeuron(Id).Neur_X += FindNeuron(Id).Delta;
-                        
-                        // Assigning new Index value due to change in coordinates
-                        FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
-                        
-                        // Changing coordinates for visualisation
-                        FindNeuron(Id).ChangePosition();
-                    }
-                }
-                else // If neuron's position is to the right of the input array reduce coordinates' values by the amount of Delta value
-                {
-                    // Calculate the increase value
-                    float IncValR = (FindNeuron(Id).Neur_X - FindNeuron(Id).Delta) / MainWindow.Vpw;
-
-                    if (IncValR < 0)
-                    {
-                        // Decreasing Y by the amount of rows
-                        FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X);
-                        
-                        // Reducing Delta value by the amount of rows for further decrease of X value
-                        FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X));
-                       
-                        // Assigning new Index value due to change in coordinates
-                        FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
-                        
-                        // Changing coordinates for visualisation
-                        FindNeuron(Id).ChangePosition();
-                    }
-                    else
-                    {
-                        // Decreasing X value by the amount of Delta value
-                        FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta;
-                        
-                        // Assigning new Index value due to change in coordinates
-                        FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
-                        
-                        // Changing coordinates for visualisation
-                        FindNeuron(Id).ChangePosition();
-                    }
-                }
-                
-                //System.Threading.Thread.Sleep(1000);
-                
-            }
-            //////////////////////////////////////////////////////WIP
-            // Find neighbours axons/synapses values related to parent neuron for further weight change
-            // Change neighbours positions
-        }
-
-    } //-->NeuralNetwork
-
-    public class Connection
-    {
-        public Neuron _neur1 { get; set; }
-        public Neuron _neur2 { get; set; }
-        public float _weight { get; set; }
-        public int Age { get; set; }
-        public long _id1 { get; set; } //ids of nodes that should be connected 
-        public long _id2 { get; set; }
-        private static Random rnd = new Random();
-
-        //connection between first two neurons when we don't have the id of the parent neuron
-        public Connection(ref long num)
-        {
-            Age = 0;
-            var TempX_1 = (float)0.1 * (rnd.Next(1, 10));
-            var TempY_1 = (float)0.1 * (rnd.Next(1, 10));
-            _neur1 = new Neuron(++num, TempX_1, TempY_1);
-            MainWindow._ConnEdges.Add((ushort)(num + (2 * num)));
-            _id1 = _neur1.NeurNum;
-
-            var TempX_2 = (float)0.1 * (rnd.Next(0, 9));
-            var TempY_2 = (float)0.1 * (rnd.Next(0, 9));
-            _neur2 = new Neuron(++num, TempX_2, TempY_2);
-            MainWindow._ConnEdges.Add((ushort)(num + (2 * num)));
-            _id2 = _neur2.NeurNum;
-            
-            //adding output info to neur1
-            _neur1.Axons.Add(new NumWeights(1, _neur2.NeurNum , TempX_2, TempY_2));
-            
-            //adding input info to neur2
-            _neur2.Synapses.Add(new NumWeights(1, _neur1.NeurNum, TempX_1, TempY_1));
-
-            MainWindow.GlRender();
-        }
-
-        // Creating connection when parent neuron already exists
-        public Connection(ref long num, long previous_id, float X_parent, float Y_parent) 
-        {
-            Age = 0;
-            var TempX_1 = (float)0.1 * (rnd.Next(1, 10));
-            var TempY_1 = (float)0.1 * (rnd.Next(1, 10));
-            _neur1 = new Neuron(++num, TempX_1, TempY_1);
-            MainWindow._ConnEdges.Add((ushort)(num + (2 * num)));
-            _id1 = _neur1.NeurNum;
-            
-            //adding output info to _neur1.Axons array, Axons.Count being new id for the new weight that's being added
-            _neur1.Axons.Add(new NumWeights(_neur1.Axons.Count, previous_id , X_parent, Y_parent));
-                        
-            //send info (about what neuron should be connected to _neur1) to the list of connections in the opengl mode
-            MainWindow._ConnEdges.Add((ushort)(previous_id + (2 * previous_id)));
-            _id2 = previous_id;
-            
-            MainWindow.GlRender();
-        }
-    } //-->Connection
-
-    public class Neuron
-    {
-        //neuron's number
-        public long NeurNum { get; private set; }
-
-        //index in input vector (index of pixel occupied by the neuron)
-        public int NeurIndInput { get; set; }
-
-        //neuron's position
-        public float Neur_X { get; set; }
-        public float Neur_Y { get; set; }
-
-        //distance to move node after processing 
-        public float Delta { get; set; }
-
-        //position index in _Position list
-        private int PosInd { get; set; }
-        
-        /* //output axon connection to the id
-         public int Next_num { get => next_num; set => next_num = value; }
-
-         //output axon connection weight
-         public float Next_weight { get => next_weight; set => next_weight = value; }*/
-
-        //output axons
-        public List<NumWeights> Axons { get; set; } = new List<NumWeights>();
-
-        //synapses (inputs)
-        public List<NumWeights> Synapses { get; set; } = new List<NumWeights>();
-
-        //previous experience
-        public List<PrevExp> Experience { get; set; } = new List<PrevExp>();
-
-        //error
-        public int Error { get; set; }
-
-        //local error (sum of errors) 
-        public int E { get; set; }
-
-        //bool value representing whether distance has been processed or not
-        bool Processed { get; set; }
-
-        //check direction of search for ProcessDistance method
-        public bool Forward { get; set; }
-
-        //location of node compared to MainInput vector (Left == true => Increase Delta value in Adapt_weights function)
-        public bool Left { get; set; }
-
-        private static Random _rnd = new Random();
-
-        public Neuron(long num)
-        {
-            NeurNum = num;
-            Error = 0;
-            NeurIndInput = -1;
-            Processed = false;
-        }
-
-        public Neuron(long num, float _x, float _y)
-        {
-            NeurNum = num;
-            Error = 0;
-            NeurIndInput = -1;
-            Processed = false;
-
-            //making limit for neuron's position so it wouldn't be possible for it to get out of the picture's borders
-            if (((MainWindow.Vpw - ((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2)) / MainWindow.Vpw) < _x)
-            {
-                _x = ((MainWindow.Vpw - ((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2)) / MainWindow.Vpw) - ((float)1 * (_rnd.Next(0, 9))) - (1.0f * MainWindow.K);
-            }
-
-            if ((((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2) / MainWindow.Vpw) > _x)
-            {
-                _x = (((MainWindow.Vpw - ((float)1 * (_rnd.Next(0, 9))) - (MainWindow._Ratio * MainWindow.Vph)) / 2) / MainWindow.Vpw);
-            }
-
-            if (((MainWindow.Vph - ((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2)) / MainWindow.Vph) < _y)
-            {
-                _y = ((MainWindow.Vph - ((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2)) / MainWindow.Vph) - ((float)1 * (_rnd.Next(0, 9))) - (1.0f * MainWindow.K);
-            }
-
-            if ((((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2) / MainWindow.Vph) > _y)
-            {
-                _y = (((MainWindow.Vph - ((float)1 * (_rnd.Next(0, 9))) - (MainWindow._Ratio * MainWindow.Vpw)) / 2) / MainWindow.Vph);
-            }
-
-            MainWindow.X_visual = Neur_X = _x;
-            MainWindow.Y_visual = Neur_Y = _y;
-
-            //drawing triangle that represents one node:
-            MainWindow._Position.Add(new OpenGL.Vertex3f(((0.0f * MainWindow.K) + MainWindow.X_visual),
-               ((0.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f));
-            MainWindow._Position.Add(new OpenGL.Vertex3f(((0.5f * MainWindow.K) + MainWindow.X_visual),
-             ((1.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f));
-            MainWindow._Position.Add(new OpenGL.Vertex3f(((1.0f * MainWindow.K) + MainWindow.X_visual),
-             ((0.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f));
-
-            //remembering index of the first vertice of the triangle
-            PosInd = MainWindow._Position.Count - 3;
-
-            MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 0));
-            MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 1));
-            MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 2));
-
-            MainWindow._ArrayColor.Add(1.0f);
-            MainWindow._ArrayColor.Add(0.0f);
-            MainWindow._ArrayColor.Add(1.0f);
-            MainWindow._ArrayColor.Add(1.0f);
-            MainWindow._ArrayColor.Add(0.0f);
-            MainWindow._ArrayColor.Add(1.0f);
-            MainWindow._ArrayColor.Add(1.0f);
-            MainWindow._ArrayColor.Add(0.0f);
-            MainWindow._ArrayColor.Add(1.0f);
-
-        }
-
-        ~Neuron() { }
-
-        //neuron's comparison algorithm       ////////////////WIP
-        private void Compare()
-        {
-            
-
-
-        }
-
-        //change visualisation if current location has changed           ///////////////////////////////WIP
-        public void ChangePosition()
-        {
-            MainWindow.X_visual = Neur_X;
-            MainWindow.Y_visual = Neur_Y;
-            
-            MainWindow._Position[PosInd] = new OpenGL.Vertex3f(((0.0f * MainWindow.K) + MainWindow.X_visual),
-               ((0.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f);
-            MainWindow._Position[PosInd + 1] = new OpenGL.Vertex3f(((0.5f * MainWindow.K) + MainWindow.X_visual),
-             ((1.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f);
-            MainWindow._Position[PosInd + 2] = new OpenGL.Vertex3f(((1.0f * MainWindow.K) + MainWindow.X_visual),
-             ((0.0f * MainWindow.K) + MainWindow.Y_visual), 0.0f);
-
-            //System.Threading.Thread.Sleep(1000);
-            //Gl.Clear(ClearBufferMask.ColorBufferBit);
-            //Gl.BindVertexArray(MainWindow._TriangleVao);
-           
-            //updating gl buffers in order to redraw nodes' positions
-            MainWindow.GlUpdateBuffers();
-        }
-
-        //for first winner find the nearest value in MainInput vector and update local error 
-        public void ProcessDistance() /////////////////////////////////Work In Progress////////////
-        {
-            //check direction of search
-            if (Forward == true)
-            {
-                for (int i = NeurIndInput; i < MainWindow.MainInput.Length; i++)
-                {
-                    //searching for the first pixel that is different from black background
-                    if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[4 * i + 1] > 0) || (MainWindow.MainInput[4 * i + 2] > 0)))
-                    {
-                        Error += (int)Math.Pow(Math.Abs((i - NeurIndInput) * MainWindow._pixelSize), 2); 
-
-                        //changing Delta (distance) for further change of winner's position and it's synapses values and neighbours' position and their axons values accordingly
-                        Delta = NeuralNetwork.Eps_w * ((i - NeurIndInput) * MainWindow._pixelSize);
-                        //activating trigger value to stop multithread search
-                        Processed = true;
-                        //setting location value compared to MainInput vector for further use in Adapt_weights function
-                        Left = true;  
-                        break;
-                    }
-                    Thread.Sleep(0);
-                }
-            }
-            else
-            {
-                for (int i = NeurIndInput; i >= 2; i--)
-                {
-                    if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[4 * i - 1] > 0) || (MainWindow.MainInput[4 * i - 2] > 0)))
-                    {
-                        Error += (int)Math.Pow(Math.Abs((NeurIndInput - i) * MainWindow._pixelSize), 2);
-                        Delta = NeuralNetwork.Eps_w * ((NeurIndInput - i) * MainWindow._pixelSize);
-                        Processed = true;
-                        Left = false;
-                        break;
-                    }
-                    Thread.Sleep(0);
-                }
-            }
-        }
-
-    } //-->Neuron
-    
-    public struct NumWeights //neuron's connections (synapses, axons) id_of_weight/weight_amount(X,Y)
-    {
-        public NumWeights(int weight_id, long neigh_id, float weightX, float weightY) 
-        {
-            NeighId = neigh_id;
-            WeightDataId = weight_id;
-            WeightDataX = weightX;
-            WeightDataY = weightY;
-        }
-
-        //input's weight id that is used in the linked list of 'weight ids' (starting from strongest weight to the weakest) 
-        public int WeightDataId { get; private set; }         /////////////////////////////
-
-        //the amount of weight of each synapse/axon
-        public float WeightDataX { get; set; }
-        public float WeightDataY { get; set; }
-
-        //the id of neighbour in connection
-        public long NeighId { get; set; } 
-    }
-
-    public struct PrevExp //neuron's experience                  //~~~~~~~~~~~~?
-    {
-        public PrevExp(int x, int y)
-        {
-            Row = x;
-            Column = y;
-        }
-
-        //Previous experience matrix coordinates x
-        public int Row { get; private set; }
-
-        //Previous experience matrix coordinates y
-        public int Column { get; private set; } 
-    }
-
+       
 }
