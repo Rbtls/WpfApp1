@@ -125,9 +125,6 @@ namespace WpfApp1
             //starting forward search in a separate thread in order to create a parallel search execution in both directions  
             Th1.Start();
 
-            //changing direction of search to backwards
-            Winner.Forward = false;
-
             //starting backward search in the main thread
             Winner.ProcessDistance();
 
@@ -150,13 +147,13 @@ namespace WpfApp1
                 // Calculate the increase value
                 float IncValL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / MainWindow.Vpw;
 
-                // When Delta is out of the X limit, increase Y...
+                // When Delta is out of the X limit, increase Y
                 if (IncValL > 1)
                 {
                     // Increasing Y by the amount of rows
                     FindNeuron(Id).Neur_Y += (int)IncValL - 1;
 
-                    // Reducing Delta value by the amount of rows for further increase of X value
+                    // Reducing Delta value by the amount of rows for further increase of the X value
                     FindNeuron(Id).Neur_X += FindNeuron(Id).Delta - MainWindow.Vpw * IncValL;
 
                     // Assigning new Index value due to the change in coordinates
@@ -170,7 +167,7 @@ namespace WpfApp1
                     // Increasing X value by the amount of Delta value
                     FindNeuron(Id).Neur_X += FindNeuron(Id).Delta;
 
-                    // Assigning new Index value due to change in coordinates
+                    // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
 
                     // Changing coordinates for visualisation
@@ -184,13 +181,13 @@ namespace WpfApp1
 
                 if (IncValR < 0)
                 {
-                    // Decreasing Y by the amount of rows
-                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X);
+                    // Decreasing Y by removing the integer part of Delta/X division (the amount of rows with width==X each)
+                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X); 
 
-                    // Reducing Delta value by the amount of rows for further decrease of X value
+                    // Reducing Delta value by the amount of rows for further decrease of the X value
                     FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X));
 
-                    // Assigning new Index value due to change in coordinates
+                    // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
 
                     // Changing coordinates for visualisation
@@ -201,7 +198,7 @@ namespace WpfApp1
                     // Decreasing X value by the amount of Delta value
                     FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta;
 
-                    // Assigning new Index value due to change in coordinates
+                    // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
 
                     // Changing coordinates for visualisation
