@@ -144,17 +144,17 @@ namespace WpfApp1
             // If neuron's position is to the left of the input array increase coordinates' values by the amount of Delta value
             if (FindNeuron(Id).Left == true) //neuron's X&Y is < than input
             {
-                // Calculate the increase value
+                // Calculate the increase value (check whether delta + x is out of Vpw borders)
                 float IncValL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / MainWindow.Vpw;
 
                 // When Delta is out of the X limit, increase Y
                 if (IncValL > 1)
                 {
-                    // Increasing Y by the amount of rows
-                    FindNeuron(Id).Neur_Y += (int)IncValL - 1;
+                    // Increasing Y by the amount of rows            
+                    FindNeuron(Id).Neur_Y += IncValL - MainWindow.Resln;  //////////////
 
                     // Reducing Delta value by the amount of rows for further increase of the X value
-                    FindNeuron(Id).Neur_X += FindNeuron(Id).Delta - MainWindow.Vpw * IncValL;
+                    FindNeuron(Id).Neur_X += (FindNeuron(Id).Delta - MainWindow.Vpw * IncValL) * MainWindow.Resln;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
@@ -165,7 +165,7 @@ namespace WpfApp1
                 else
                 {
                     // Increasing X value by the amount of Delta value
-                    FindNeuron(Id).Neur_X += FindNeuron(Id).Delta;
+                    FindNeuron(Id).Neur_X += FindNeuron(Id).Delta * MainWindow.Resln;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
@@ -182,10 +182,10 @@ namespace WpfApp1
                 if (IncValR < 0)
                 {
                     // Decreasing Y by removing the integer part of Delta/X division (the amount of rows with width==X each)
-                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X); 
+                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X) * MainWindow.Resln; 
 
                     // Reducing Delta value by the amount of rows for further decrease of the X value
-                    FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X));
+                    FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X)) * MainWindow.Resln;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
@@ -196,7 +196,7 @@ namespace WpfApp1
                 else
                 {
                     // Decreasing X value by the amount of Delta value
-                    FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta;
+                    FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta * MainWindow.Resln;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);

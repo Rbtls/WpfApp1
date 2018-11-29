@@ -21,7 +21,10 @@ namespace WpfApp1
 
         //neuron's size in visualisation
         public const float K = 0.02f;
-        
+
+        //columns/rows resolution
+        public const float Resln = 0.1f;
+
         //neuron's coordinates in visualisation
         public static float X_visual { get; set; } 
         public static float Y_visual { get; set; }
@@ -468,12 +471,11 @@ namespace WpfApp1
         public static int CalculateIndex(float X, float Y)
         {
             int ind;
-            //Current neuron's index to look for in main input array MainInput ("input vector x").
+            //Current neuron's index to look for in the main input array MainInput ("input vector x").
             if (Y == 0)
             {
                 ind = (int)(((_image.Width) * (int)(_image.Height * (1.0 - Y))) - (int)(_image.Width - (_image.Width * X)));
                 return ind;
-
             }
             else
             {

@@ -127,9 +127,9 @@ namespace WpfApp1
             MainWindow._ArrayColor.Add(0.0f);
             MainWindow._ArrayColor.Add(1.0f);
 
-            MainWindow.debug1 = MainWindow.MainInput[4 * NeurIndInput];
+            MainWindow.debug1 = MainWindow.MainInput[4 * NeurIndInput + 2];
             MainWindow.debug2 = MainWindow.MainInput[4 * NeurIndInput + 1];
-            MainWindow.debug3 = MainWindow.MainInput[4 * NeurIndInput + 2];
+            MainWindow.debug3 = MainWindow.MainInput[4 * NeurIndInput];
             MainWindow.debug4 = NeurIndInput;
         }
 
@@ -172,7 +172,7 @@ namespace WpfApp1
             {
                 // check the direction of search
                 if (Forward == true)
-                {
+                { 
                     // changing direction of the search for backward search in separate thread
                     Forward = false;
                     for (int i = NeurIndInput; i < MainWindow.MainInput.Length; i++)
@@ -180,13 +180,13 @@ namespace WpfApp1
                         // searching for the first pixel that is different from black background
                         if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[4 * i + 1] > 0) || (MainWindow.MainInput[4 * i + 2] > 0)))
                         {
-                            MainWindow.debug5 = MainWindow.MainInput[4 * i];
+                            MainWindow.debug5 = MainWindow.MainInput[4 * i + 2];
                             MainWindow.debug6 = MainWindow.MainInput[4 * i + 1];
-                            MainWindow.debug7 = MainWindow.MainInput[4 * i + 2];
+                            MainWindow.debug7 = MainWindow.MainInput[4 * i];
                             MainWindow.debug8 = i;
                             Error += (int)Math.Pow(Math.Abs((i - NeurIndInput) * MainWindow._pixelSize), 2);
 
-                            // changing Delta (distance) for further change of winner's position and it's synapses values as well as neighbours' position and their axons' values
+                            // changing Delta (distance) for further change of winner's position and it's synapses values as well as neighbours position and their axons values
                             Delta = NeuralNetwork.Eps_w * ((i - NeurIndInput) * MainWindow._pixelSize);
                             // activating trigger value to stop multithread search
                             Processed = true;
@@ -203,9 +203,9 @@ namespace WpfApp1
                     {
                         if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[4 * i + 1] > 0) || (MainWindow.MainInput[4 * i + 2] > 0)))
                         {
-                            MainWindow.debug5 = MainWindow.MainInput[4 * i];
+                            MainWindow.debug5 = MainWindow.MainInput[4 * i + 2];
                             MainWindow.debug6 = MainWindow.MainInput[4 * i + 1];
-                            MainWindow.debug7 = MainWindow.MainInput[4 * i + 2];
+                            MainWindow.debug7 = MainWindow.MainInput[4 * i];
                             MainWindow.debug8 = i;
                             Error += (int)Math.Pow(Math.Abs((NeurIndInput - i) * MainWindow._pixelSize), 2);
                             Delta = NeuralNetwork.Eps_w * ((NeurIndInput - i) * MainWindow._pixelSize);

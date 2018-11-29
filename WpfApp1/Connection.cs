@@ -12,7 +12,8 @@ namespace WpfApp1
         public Neuron _neur2 { get; set; }
         public float _weight { get; set; }
         public int Age { get; set; }
-        public long _id1 { get; set; } //ids of nodes that should be connected 
+        //ids of nodes that should be connected 
+        public long _id1 { get; set; } 
         public long _id2 { get; set; }
         private static Random rnd = new Random();
 
@@ -20,14 +21,14 @@ namespace WpfApp1
         public Connection(ref long num)
         {
             Age = 0;
-            var TempX_1 = (float)0.1 * (rnd.Next(1, 10));
-            var TempY_1 = (float)0.1 * (rnd.Next(1, 10));
+            var TempX_1 = MainWindow.Resln * (rnd.Next(1, 10));
+            var TempY_1 = MainWindow.Resln * (rnd.Next(1, 10));
             _neur1 = new Neuron(++num, TempX_1, TempY_1);
             MainWindow._ConnEdges.Add((ushort)(num + (2 * num)));
             _id1 = _neur1.NeurNum;
 
-            var TempX_2 = (float)0.1 * (rnd.Next(0, 9));
-            var TempY_2 = (float)0.1 * (rnd.Next(0, 9));
+            var TempX_2 = MainWindow.Resln * (rnd.Next(0, 9));
+            var TempY_2 = MainWindow.Resln * (rnd.Next(0, 9));
             _neur2 = new Neuron(++num, TempX_2, TempY_2);
             MainWindow._ConnEdges.Add((ushort)(num + (2 * num)));
             _id2 = _neur2.NeurNum;
@@ -45,8 +46,8 @@ namespace WpfApp1
         public Connection(ref long num, long previous_id, float X_parent, float Y_parent)
         {
             Age = 0;
-            var TempX_1 = (float)0.1 * (rnd.Next(1, 10));
-            var TempY_1 = (float)0.1 * (rnd.Next(1, 10));
+            var TempX_1 = MainWindow.Resln * (rnd.Next(1, 10));
+            var TempY_1 = MainWindow.Resln * (rnd.Next(1, 10));
             _neur1 = new Neuron(++num, TempX_1, TempY_1);
             MainWindow._ConnEdges.Add((ushort)(num + (2 * num)));
             _id1 = _neur1.NeurNum;
