@@ -151,10 +151,10 @@ namespace WpfApp1
                 if (IncValL > 1)
                 {
                     // Increasing Y by the amount of rows            
-                    FindNeuron(Id).Neur_Y += IncValL - MainWindow.Resln;  //////////////
+                    FindNeuron(Id).Neur_Y += (int)IncValL * MainWindow.Resln;  
 
                     // Reducing Delta value by the amount of rows for further increase of the X value
-                    FindNeuron(Id).Neur_X += (FindNeuron(Id).Delta - MainWindow.Vpw * IncValL) * MainWindow.Resln;
+                    FindNeuron(Id).Neur_X += (FindNeuron(Id).Delta - (int)IncValL) * MainWindow.Resln;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);

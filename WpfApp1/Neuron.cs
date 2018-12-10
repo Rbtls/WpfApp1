@@ -15,7 +15,7 @@ namespace WpfApp1
         // index in input vector (index of pixel occupied by the neuron)
         public int NeurIndInput { get; set; }
 
-        // neuron's position
+        // neuron's position in visualisation
         public float Neur_X { get; set; }
         public float Neur_Y { get; set; }
 
@@ -94,7 +94,7 @@ namespace WpfApp1
                 _y = (((MainWindow.Vph - ((float)1 * (_rnd.Next(0, 9))) - (MainWindow._Ratio * MainWindow.Vpw)) / 2) / MainWindow.Vph);
             }
 
-            // applying constructor's parameters to neuron's coordinates and coordinates in visualisation
+            // applying constructor's parameters to neuron's coordinates in visualisation
             MainWindow.X_visual = Neur_X = _x;
             MainWindow.Y_visual = Neur_Y = _y;
 
@@ -168,20 +168,20 @@ namespace WpfApp1
         public void ProcessDistance() ///////////Work In Progress/////////// 
         {
             // checking whether the node has the index value
-            if (NeurIndInput != (-1))
+            if ((NeurIndInput != (-1)) && (Processed == false))
             {
                 // check the direction of search
                 if (Forward == true)
                 { 
                     // changing direction of the search for backward search in separate thread
                     Forward = false;
-                    for (int i = NeurIndInput; i < MainWindow.MainInput.Length; i++)
+                    for (int i = NeurIndInput; i < ((MainWindow.MainInput.Length / 4) - 2); i++)
                     {
                         // searching for the first pixel that is different from black background
-                        if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[4 * i + 1] > 0) || (MainWindow.MainInput[4 * i + 2] > 0)))
+                        if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
                         {
-                            MainWindow.debug5 = MainWindow.MainInput[4 * i + 2];
-                            MainWindow.debug6 = MainWindow.MainInput[4 * i + 1];
+                            MainWindow.debug5 = MainWindow.MainInput[(4 * i) + 2];
+                            MainWindow.debug6 = MainWindow.MainInput[(4 * i) + 1];
                             MainWindow.debug7 = MainWindow.MainInput[4 * i];
                             MainWindow.debug8 = i;
                             Error += (int)Math.Pow(Math.Abs((i - NeurIndInput) * MainWindow._pixelSize), 2);
@@ -191,29 +191,29 @@ namespace WpfApp1
                             // activating trigger value to stop multithread search
                             Processed = true;
                             // set location value in relation to MainInput vector for further use in the Adapt_weights function
-                            Left = true;
+                            Left = false;
                             break;
                         }
-                        Thread.Sleep(0);
+                        //Thread.Sleep(0);
                     }
                 }
                 else
                 {
                     for (int i = NeurIndInput; i > 0; i--)
                     {
-                        if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[4 * i + 1] > 0) || (MainWindow.MainInput[4 * i + 2] > 0)))
+                        if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
                         {
-                            MainWindow.debug5 = MainWindow.MainInput[4 * i + 2];
-                            MainWindow.debug6 = MainWindow.MainInput[4 * i + 1];
+                            MainWindow.debug5 = MainWindow.MainInput[(4 * i) + 2];
+                            MainWindow.debug6 = MainWindow.MainInput[(4 * i) + 1];
                             MainWindow.debug7 = MainWindow.MainInput[4 * i];
                             MainWindow.debug8 = i;
                             Error += (int)Math.Pow(Math.Abs((NeurIndInput - i) * MainWindow._pixelSize), 2);
                             Delta = NeuralNetwork.Eps_w * ((NeurIndInput - i) * MainWindow._pixelSize);
                             Processed = true;
-                            Left = false;
+                            Left = true;
                             break;
                         }
-                        Thread.Sleep(0);
+                        //Thread.Sleep(0);
                     }
                 }
                 

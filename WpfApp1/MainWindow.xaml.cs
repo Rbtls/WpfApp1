@@ -22,7 +22,7 @@ namespace WpfApp1
         //neuron's size in visualisation
         public const float K = 0.02f;
 
-        //columns/rows resolution
+        //columns/rows resolution (the maximum value of width or height being 1)
         public const float Resln = 0.1f;
 
         //neuron's coordinates in visualisation
@@ -410,6 +410,7 @@ namespace WpfApp1
 
             TextBox1.Text += $"Number of neurons = {network.GetNNnum()} " + "\r\n";
             TextBox1.Text += $"Length of bytes = {MainInput.Length} " + "\r\n" + "\r\n";
+            // starts with 3 because first triangle is invisible
             TextBox1.Text += $"pixel#1 X = { _PositionArr[3].x} " + "\r\n";
             TextBox1.Text += $"pixel#1 Y = { _PositionArr[3].y} " + "\r\n";
             TextBox1.Text += $"pixel#2 X = { _PositionArr[6].x} " + "\r\n";
