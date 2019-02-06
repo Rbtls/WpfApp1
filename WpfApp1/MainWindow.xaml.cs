@@ -20,7 +20,7 @@ namespace WpfApp1
         public NeuralNetwork network;
 
         //neuron's size in visualisation
-        public const float K = 0.02f;
+        public const float NodeScale = 0.02f;
 
         //columns/rows resolution (the maximum value of width or height being 1)
         public const float Resln = 0.1f;
@@ -134,6 +134,8 @@ namespace WpfApp1
                    
                     Gl.BindFramebuffer(FramebufferTarget.ReadFramebuffer, _tframebuffer);
                     Gl.Begin(PrimitiveType.Quads);
+
+                    // Image scaling based on it's dimensions.
                     if (MainWindow._image.Height >= MainWindow._image.Width)
                     {
                         Gl.TexCoord2(0, 1);
@@ -152,7 +154,9 @@ namespace WpfApp1
                         Gl.Vertex3(((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) /2) / MainWindow.Vpw, 
                             1, 0);
 
-                        _frame = (float)(((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2) * ((float)_image.Height / Vph));
+                        //_frame = (float)(((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2) / _pixelSize);
+
+                        _frame = (float)((MainWindow.Vpw - (_image.Width * _pixelSize)) / 2);
                     }
                     else
                     {
@@ -172,7 +176,8 @@ namespace WpfApp1
                         Gl.Vertex3(0,
                            (MainWindow.Vph - ((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2)) / MainWindow.Vph, 0);
 
-                        _frame = (float)(((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2) * ((float)_image.Width / Vpw));
+                        //_frame = (float)(((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2) / _pixelSize);
+                        _frame = (float)((MainWindow.Vph - (_image.Height * _pixelSize)) / 2);
                     }
                     Gl.End();
                     Gl.CopyTexSubImage2D(TextureTarget.Texture2d,
@@ -480,7 +485,7 @@ namespace WpfApp1
             }
             else
             {
-                ind = (int)((_image.Width * X + 0.5 * K) + ((_image.Width) * (int)(_image.Height * (1.0 - Y)) - _image.Width));
+                ind = (int)((_image.Width * X + 0.5 * NodeScale) + ((_image.Width) * (int)(_image.Height * (1.0 - Y)) - _image.Width));
                 //ind = (int)(((vph * X)/_pixelSize) + (((((1.0 - Y) * vph) - 1) / _pixelSize)* (vph / _pixelSize)) );
                 return ind;
             }

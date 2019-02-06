@@ -26,37 +26,38 @@ namespace WpfApp1
         public static float Eps_w { get; set; }
         public static float Eps_n { get; set; }
 
-        public LinkedList<Connection> _connections = new LinkedList<Connection>();
+        public LinkedList<Connection> ConnectionsList = new LinkedList<Connection>();
 
         public NeuralNetwork()
         {
+            // Network parameters
+            Lambda = 20;  // insert frequency 
+            Age_max = 15; // maximum connection age
+            Alpha = 0.5f; // variable used for mistakes adaptation
+            Eps_w = 0.028f; // Eps_w and Eps_n are used for weights adaptation
+            Eps_n = 0.0006f;
+            Max_nodes = 100; // maximum amount of nodes
+
             // Creating new connection
             NeursNum = 0;
             Connection _conn = new Connection(ref NeursNum);
-            _connections.AddFirst(_conn);
+            ConnectionsList.AddFirst(_conn);
 
             // Debug
             //////////////////////adding new neuron
-            Connection _conn2 = new Connection(ref NeursNum, 2, _connections.Last.Value._neur2.Neur_X,
-                _connections.Last.Value._neur2.Neur_Y);
+            Connection _conn2 = new Connection(ref NeursNum, 2, ConnectionsList.Last.Value.ConnNeur2.Neur_X,
+                ConnectionsList.Last.Value.ConnNeur2.Neur_Y);
 
-            _connections.Last.Value._neur2.Synapses.Add(new NumWeights(1, _conn2._neur1.NeurNum, _conn2._neur1.Neur_X,
-                _conn2._neur1.Neur_Y));
+            ConnectionsList.Last.Value.ConnNeur2.Synapses.Add(new NumWeights(1, _conn2.ConnNeur1.NeurNum, _conn2.ConnNeur1.Neur_X,
+                _conn2.ConnNeur1.Neur_Y));
 
-            _connections.AddLast(_conn2);
-
-            Lambda = 20;
-            Age_max = 15;
-            Alpha = 0.5f;
-            Eps_w = 0.05f;
-            Eps_n = 0.0006f;
-            Max_nodes = 100;
+            ConnectionsList.AddLast(_conn2);
         }
 
-        //set index in input vector (the space occupied by neuron)  //////////////////////////Work In Progress/////////
+        // set index in input vector (the space occupied by neuron)  //////////////////////////Work In Progress/////////
         public void SetInd(int ConnInd, int ind)
         {
-            _connections.ElementAt(ConnInd)._neur1.NeurIndInput = ind;
+            ConnectionsList.ElementAt(ConnInd).ConnNeur1.NeurIndInput = ind;
         }
 
         public long GetNNnum()
@@ -66,15 +67,15 @@ namespace WpfApp1
 
         private Neuron FindNeuron(long uid)
         {
-            foreach (Connection _conn in _connections)
+            foreach (Connection _conn in ConnectionsList)
             {
-                if (_conn._neur1.NeurNum == uid)
+                if (_conn.ConnNeur1.NeurNum == uid)
                 {
-                    return _conn._neur1;
+                    return _conn.ConnNeur1;
                 }
-                else if (_conn._neur2.NeurNum == uid)
+                else if (_conn.ConnNeur2.NeurNum == uid)
                 {
-                    return _conn._neur2;
+                    return _conn.ConnNeur2;
                 }
             }
             return null;
@@ -84,25 +85,25 @@ namespace WpfApp1
         {
             if (Error_min == 0)
             {
-                Error_min = _connections.ElementAt(0)._neur1.Error;
-                Winner = _connections.ElementAt(0)._neur1;
+                Error_min = ConnectionsList.ElementAt(0).ConnNeur1.Error;
+                Winner = ConnectionsList.ElementAt(0).ConnNeur1;
                 Secondwinner = Winner;
             }
-            foreach (Connection _conn in _connections)
+            foreach (Connection _conn in ConnectionsList)
             {
-                if (_conn._neur1.Error < Error_min)
+                if (_conn.ConnNeur1.Error < Error_min)
                 {
                     Secondwinner = Winner;
-                    Error_min = _conn._neur1.Error;
-                    Winner = _conn._neur1;
+                    Error_min = _conn.ConnNeur1.Error;
+                    Winner = _conn.ConnNeur1;
                 }
-                else if (_conn._neur2 != null)
+                else if (_conn.ConnNeur2 != null)
                 {
-                    if (_conn._neur2.Error < Error_min)
+                    if (_conn.ConnNeur2.Error < Error_min)
                     {
                         Secondwinner = Winner;
-                        Error_min = _conn._neur2.Error;
-                        Winner = _conn._neur2;
+                        Error_min = _conn.ConnNeur2.Error;
+                        Winner = _conn.ConnNeur2;
                     }
                 }
             }
@@ -137,7 +138,7 @@ namespace WpfApp1
             //5. 
 
         }
-
+        
         // Change neuron's and it's neighbours' positions  /////////////////////////////////WIP
         public void Adapt_weights(long Id/*id of neuron*/)
         {
@@ -145,16 +146,21 @@ namespace WpfApp1
             if (FindNeuron(Id).Left == true) //neuron's X&Y is < than input
             {
                 // Calculate the increase value (check whether delta + x is out of Vpw borders)
-                float IncValL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / MainWindow.Vpw;
+                float IncRowsL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
+
+                /*while ((FindNeuron(Id).Neur_X + (FindNeuron(Id).Delta - (int)IncRowsL)) > (MainWindow.Vpw - MainWindow._frame))
+                {
+                    IncRowsL += 1;
+                }*/
 
                 // When Delta is out of the X limit, increase Y
-                if (IncValL > 1)
+                if (IncRowsL > 1)
                 {
                     // Increasing Y by the amount of rows            
-                    FindNeuron(Id).Neur_Y += (int)IncValL * MainWindow.Resln;  
+                    FindNeuron(Id).Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
 
                     // Reducing Delta value by the amount of rows for further increase of the X value
-                    FindNeuron(Id).Neur_X += (FindNeuron(Id).Delta - (int)IncValL) * MainWindow.Resln;
+                    FindNeuron(Id).Neur_X += (FindNeuron(Id).Delta - (int)IncRowsL);
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
@@ -165,7 +171,7 @@ namespace WpfApp1
                 else
                 {
                     // Increasing X value by the amount of Delta value
-                    FindNeuron(Id).Neur_X += FindNeuron(Id).Delta * MainWindow.Resln;
+                    FindNeuron(Id).Neur_X += FindNeuron(Id).Delta;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
@@ -177,15 +183,15 @@ namespace WpfApp1
             else // If neuron's position is to the right of the input array reduce coordinates' values by the amount of Delta value
             {
                 // Calculate the increase value
-                float IncValR = (FindNeuron(Id).Neur_X - FindNeuron(Id).Delta) / MainWindow.Vpw;
+                float IncRowsR = (FindNeuron(Id).Neur_X - FindNeuron(Id).Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!
 
-                if (IncValR < 0)
+                if (IncRowsR < 0)
                 {
                     // Decreasing Y by removing the integer part of Delta/X division (the amount of rows with width==X each)
-                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X) * MainWindow.Resln; 
+                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X) / MainWindow._pixelSize; 
 
                     // Reducing Delta value by the amount of rows for further decrease of the X value
-                    FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X)) * MainWindow.Resln;
+                    FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X));
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
@@ -196,7 +202,7 @@ namespace WpfApp1
                 else
                 {
                     // Decreasing X value by the amount of Delta value
-                    FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta * MainWindow.Resln;
+                    FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta;
 
                     // Assigning new Index value due to the change in coordinates
                     FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
