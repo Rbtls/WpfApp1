@@ -12,7 +12,7 @@ namespace WpfApp1
         // neuron's number
         public long NeurNum { get; private set; }
 
-        // index in input vector (index of pixel occupied by the neuron)
+        // neuron's index in the input vector (the index of the pixel occupied by the neuron)
         public int NeurIndInput { get; set; }
 
         // neuron's position in visualisation (from 0 to 1.f)
@@ -24,6 +24,11 @@ namespace WpfApp1
 
         // position index in _Position list
         private int PosInd { get; set; }
+
+        // nearest value to the left from the node
+        private int DistL { get; set; }
+
+        private int DistR { get; set; }
 
         /* // output axon connection to the id
          public int Next_num { get => next_num; set => next_num = value; }
@@ -45,19 +50,13 @@ namespace WpfApp1
 
         // local error (sum of errors) 
         public int E { get; set; }
-
-        // bool value representing whether distance has been processed or not
-        bool Processed { get; set; }
-
+        
         // check direction of search for ProcessDistance method
         public bool Forward { get; set; }
 
         // location of node compared to MainInput vector (Left == true => Increase Delta value in Adapt_weights function)
         public bool Left { get; set; }
-
-        // search trigger for stopping of ProcessDistance(). Use it whenever ProcessDistance() is initialized.
-        public bool SearchTrig { get; set; }
-
+        
         private static Random _rnd = new Random();
 
         public Neuron(long num)
@@ -65,7 +64,6 @@ namespace WpfApp1
             NeurNum = num;
             Error = 0;
             NeurIndInput = -1;
-            Processed = false;
         }
 
         public Neuron(long num, float _x, float _y)
@@ -74,7 +72,6 @@ namespace WpfApp1
             NeurNum = num;
             Error = 0;
             NeurIndInput = -1;
-            Processed = false;
 
             // limit neuron's position so it wouldn't be possible for it to get out of the picture's borders
             if (((MainWindow.Vpw - ((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2)) / MainWindow.Vpw) < _x)
@@ -112,7 +109,7 @@ namespace WpfApp1
             // remembering index of the first vertice of the triangle
             PosInd = MainWindow._Position.Count - 3;
 
-            // calculating neuron's index value based on neuron's X and Y coordinates used in visualisation
+            // calculating neuron's index value based on neuron's X and Y coordinates in visualisation
             NeurIndInput = MainWindow.CalculateIndex(Neur_X, Neur_Y);
 
             MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 0));
@@ -154,22 +151,22 @@ namespace WpfApp1
             {
                 if (Neur_X < (MainWindow._frame / MainWindow.Vpw))
                 {
-                   Neur_X = MainWindow._frame / MainWindow.Vpw;
+                   Neur_X = (MainWindow._frame / MainWindow.Vpw); 
                 }
                 else if (Neur_X > ((MainWindow.Vpw - MainWindow._frame) / MainWindow.Vpw))
                 {
-                    Neur_X = (MainWindow.Vpw - MainWindow._frame) / MainWindow.Vpw;  // add  -1.0f*NodeScale
+                    Neur_X = ((MainWindow.Vpw - MainWindow._frame) / MainWindow.Vpw) - MainWindow.NodeScale; // "- NodeScale" means the width of the node
                 }
             }
             else
             {
                 if (Neur_Y < (MainWindow._frame / MainWindow.Vph))
                 {
-                    Neur_Y = MainWindow._frame / MainWindow.Vph;
+                    Neur_Y = (MainWindow._frame / MainWindow.Vph);
                 }
                 else if (Neur_Y > ((MainWindow.Vph - MainWindow._frame) / MainWindow.Vph))
                 {
-                    Neur_Y = (MainWindow.Vph - MainWindow._frame) / MainWindow.Vph;
+                    Neur_Y = ((MainWindow.Vph - MainWindow._frame) / MainWindow.Vph) - MainWindow.NodeScale;
                 }
             }
 
@@ -208,77 +205,89 @@ namespace WpfApp1
             // updating gl buffers in order to redraw nodes' positions
             MainWindow.Change_pos = true;
         }
-
-        // for the first winner find the nearest value in MainInput vector and update local error 
-        public void ProcessDistance() ///////////Work In Progress/////////// 
+        
+        public void ForwardSearch()
         {
-            // Removing any previous value of Search Trigger to start new search
-            // Search Trigger is needed to exclude any record overlapping of Left value in multithread search
-            SearchTrig = false;
+            // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
+            // rounding the rows value to farthest ten in order to aquire the right border value in the main input vector
+            int RightBorder = ((int)(NeurIndInput / MainWindow._image.Width) + 1) * MainWindow._image.Width;
 
             // checking whether the node has the index value
-            if ((NeurIndInput != (-1)) && (Processed == false))
+            if ((NeurIndInput != (-1)) )
             {
-                // check the direction of search (left == false)
-                if (Forward == true)
-                { 
-                    // changing direction of the search for backward search in separate thread
-                    Forward = false;
-                    for (int i = NeurIndInput; i < ((MainWindow.MainInput.Length / 4) - 2); i++)
-                    {
-                        // searching for the first pixel that is different from black background
-                        if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
-                        {
-                            MainWindow.debug5 = MainWindow.MainInput[(4 * i) + 2];
-                            MainWindow.debug6 = MainWindow.MainInput[(4 * i) + 1];
-                            MainWindow.debug7 = MainWindow.MainInput[4 * i];
-                            MainWindow.debug8 = i;
-
-                            Error += (int)Math.Pow(Math.Abs((i - NeurIndInput) * MainWindow._pixelSize), 2);
-
-                            // changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
-                            Delta = NeuralNetwork.Eps_w * ((i - NeurIndInput));
-
-                            // activating trigger value to stop multithread search
-                            Processed = true;
-
-                            // set location value in relation to MainInput vector for further use in the Adapt_weights function
-                            if (SearchTrig == false)
-                            {
-                                Left = false;
-                            }
-                            break;
-                        }
-                        //Thread.Sleep(0);
-                    }
-                }
-                else
+                //for (int i = NeurIndInput; i < ((MainWindow.MainInput.Length / 4) - 2); i++)
+                for (int i = NeurIndInput; i < (RightBorder - 2); i++)
                 {
-                    for (int i = NeurIndInput; i > 0; i--)
+                    // searching for the first pixel that is different from black background
+                    if (((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
                     {
-                        if ((Processed == false) && ((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
-                        {
-                            MainWindow.debug5 = MainWindow.MainInput[(4 * i) + 2];
-                            MainWindow.debug6 = MainWindow.MainInput[(4 * i) + 1];
-                            MainWindow.debug7 = MainWindow.MainInput[4 * i];
-                            MainWindow.debug8 = i;
-                            Error += (int)Math.Pow(Math.Abs((NeurIndInput - i) * MainWindow._pixelSize), 2);
-                            Delta = NeuralNetwork.Eps_w * ((NeurIndInput - i));
-                            Processed = true;
-                            if (SearchTrig == false)
-                            {
-                                Left = true;
-                            }
-                            break;
-                        }
-                        //Thread.Sleep(0);
+                        DistR = i;
+                        break;
                     }
+                    // if there were no matches
+                    DistR = -1;
                 }
-                
+            }
+        }
+
+        public void BackwardSearch()
+        {
+            // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
+            // rounding the rows value to nearest ten in order to aquire the left border value in the main input vector
+            int LeftBorder = ((int)(NeurIndInput / MainWindow._image.Width)) * MainWindow._image.Width;
+
+            // checking whether the node has the index value
+            if ((NeurIndInput != (-1)))
+            {
+                for (int i = NeurIndInput; i > (LeftBorder - 2); i--)
+                {
+                    if (((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
+                    {
+                        DistL = i;
+                        break;
+                    }
+                    // if there were no matches
+                    DistL = -1;
+                }
+            }
+        }
+
+        // checking the distance between the node and the input vector to find whether the value is located to the right/left from the node
+        public void CompareDistances()
+        {
+            if ((DistR != (-1)) && (DistL != (-1)))
+            {
+                // Comparing two values representing the length from the node towards the input vector        
+                if ((DistR - NeurIndInput) < (NeurIndInput - DistL))
+                {
+                    Error += (int)Math.Pow(Math.Abs((DistR - NeurIndInput) * MainWindow._pixelSize), 2);
+                    // changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
+                    Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInput));
+                    Left = false;
+                }
+                else if ((DistR - NeurIndInput) > (NeurIndInput - DistL)) // Left value is lower   
+                {
+                    Error += (int)Math.Pow(Math.Abs((NeurIndInput - DistL) * MainWindow._pixelSize), 2);
+                    Delta = NeuralNetwork.Eps_w * ((NeurIndInput - DistL));
+                    Left = true;
+                }
+            }
+            else if (DistR != (-1))
+            {
+                Error += (int)Math.Pow(Math.Abs((DistR - NeurIndInput) * MainWindow._pixelSize), 2);
+                Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInput));
+                Left = false;
+            }
+            else if (DistL != (-1))
+            {
+                Error += (int)Math.Pow(Math.Abs((NeurIndInput - DistL) * MainWindow._pixelSize), 2);
+                Delta = NeuralNetwork.Eps_w * ((NeurIndInput - DistL));
+                Left = true;
             }
             else
             {
-                // WIP add exception or warning message
+                // if there were no matches in both directions
+
             }
         }
 

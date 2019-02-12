@@ -55,7 +55,7 @@ namespace WpfApp1
             //adding output info to _neur1.Axons array, Axons.Count being new id for the new weight that's being added
             ConnNeur1.Axons.Add(new NumWeights(ConnNeur1.Axons.Count, previous_id, X_parent, Y_parent));
 
-            //send info (about what neuron should be connected to _neur1) to the list of connections in the opengl mode
+            //send info (about which neuron should be connected to _neur1) to the list of connections in the opengl mode
             MainWindow._ConnEdges.Add((ushort)(previous_id + (2 * previous_id)));
             Conn_id2 = previous_id;
 

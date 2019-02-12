@@ -118,16 +118,23 @@ namespace WpfApp1
             FindWinners();
 
             //2. Searching for the nearest value in _Input vector (this way we can calculate the distance between the node and the value)
-            Thread Th1 = new Thread(new ThreadStart(Winner.ProcessDistance));
+            /*Thread Th1 = new Thread(new ThreadStart(Winner.ProcessDistance));
 
             //setting the direction of search to forward
             Winner.Forward = true;
 
-            //starting forward search in a separate thread in order to create a parallel search execution in both directions  
+            //starting forward search in a separate thread in order to create a parallel search in both directions  
             Th1.Start();
 
             //starting backward search in the main thread
-            Winner.ProcessDistance();
+            Winner.ProcessDistance();*/
+
+            Parallel.Invoke(
+                () => Winner.ForwardSearch(),
+                () => Winner.BackwardSearch()                
+            );
+
+            Winner.CompareDistances();
 
             //3. Changing winner's local error
             Winner.E += Winner.Error;
@@ -143,16 +150,11 @@ namespace WpfApp1
         public void Adapt_weights(long Id/*id of neuron*/)
         {
             // If neuron's position is to the left of the input array increase coordinates' values by the amount of Delta value
-            if (FindNeuron(Id).Left == true) //neuron's X&Y is < than input
+            if (FindNeuron(Id).Left == false)
             {
                 // Calculate the increase value (check whether delta + x is out of Vpw borders)
                 float IncRowsL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
-
-                /*while ((FindNeuron(Id).Neur_X + (FindNeuron(Id).Delta - (int)IncRowsL)) > (MainWindow.Vpw - MainWindow._frame))
-                {
-                    IncRowsL += 1;
-                }*/
-
+                
                 // When Delta is out of the X limit, increase Y
                 if (IncRowsL > 1)
                 {
@@ -180,7 +182,7 @@ namespace WpfApp1
                     FindNeuron(Id).ChangePosition();
                 }
             }
-            else // If neuron's position is to the right of the input array reduce coordinates' values by the amount of Delta value
+            else // If neuron's position is to the right of the input array decrease coordinates' values by the amount of Delta value
             {
                 // Calculate the increase value
                 float IncRowsR = (FindNeuron(Id).Neur_X - FindNeuron(Id).Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!

@@ -50,10 +50,7 @@ namespace WpfApp1
         public static int debug2;
         public static int debug3;
         public static int debug4;
-        public static int debug5;
-        public static int debug6;
-        public static int debug7;
-        public static int debug8;
+        public static bool _Left;
 
         //image to open
         public static System.Drawing.Bitmap _image { get; set; }
@@ -154,8 +151,6 @@ namespace WpfApp1
                         Gl.Vertex3(((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) /2) / MainWindow.Vpw, 
                             1, 0);
 
-                        //_frame = (float)(((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2) / _pixelSize);
-
                         _frame = (float)((MainWindow.Vpw - (_image.Width * _pixelSize)) / 2);
                     }
                     else
@@ -176,7 +171,6 @@ namespace WpfApp1
                         Gl.Vertex3(0,
                            (MainWindow.Vph - ((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2)) / MainWindow.Vph, 0);
 
-                        //_frame = (float)(((MainWindow.Vph - (MainWindow._Ratio * MainWindow.Vpw)) / 2) / _pixelSize);
                         _frame = (float)((MainWindow.Vph - (_image.Height * _pixelSize)) / 2);
                     }
                     Gl.End();
@@ -426,6 +420,7 @@ namespace WpfApp1
             TextBox1.Text += $"debug2 = {debug2} " + "\r\n";
             TextBox1.Text += $"debug3 = {debug3} " + "\r\n";
             TextBox1.Text += $"debug index = {debug4} " + "\r\n";
+            TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
             //TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
             //TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
             /* TextBox1.Text += $"#2 pixel red = {red} " + "\r\n";
@@ -503,10 +498,7 @@ namespace WpfApp1
             TextBox1.Text += $"pixel#2 Y = { _PositionArr[6].y} " + "\r\n";
             TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
             TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
-            TextBox1.Text += $"debug5 = {debug5} " + "\r\n";
-            TextBox1.Text += $"debug6 = {debug6} " + "\r\n";
-            TextBox1.Text += $"debug7 = {debug7} " + "\r\n";
-            TextBox1.Text += $"debug index = {debug8} " + "\r\n";
+            TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
         }
     } //-->MainWindow
        
