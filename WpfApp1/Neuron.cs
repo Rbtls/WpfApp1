@@ -9,8 +9,8 @@ namespace WpfApp1
 {
     public class Neuron
     {
-        // neuron's number
-        public long NeurNum { get; private set; }
+        // neuron's id
+        public long NeurId { get; private set; }
 
         // neuron's index in the input vector (the index of the pixel occupied by the neuron)
         public int NeurIndInput { get; set; }
@@ -19,7 +19,7 @@ namespace WpfApp1
         public float Neur_X { get; set; }
         public float Neur_Y { get; set; }
 
-        // the distance needed in order to move the node after processing 
+        // the distance needed to move the node after processing 
         public float Delta { get; set; }
 
         // position index in _Position list
@@ -33,14 +33,14 @@ namespace WpfApp1
         /* // output axon connection to the id
          public int Next_num { get => next_num; set => next_num = value; }
 
-         // output axon connection weight
-         public float Next_weight { get => next_weight; set => next_weight = value; } */
+        // output axon connection weight
+        public float Next_weight { get => next_weight; set => next_weight = value; } */
 
         // output axons
-        public List<NumWeights> Axons { get; set; } = new List<NumWeights>();
+        public List<ConnWeights> AxonsWeights { get; set; } = new List<ConnWeights>();
 
         // synapses (inputs)
-        public List<NumWeights> Synapses { get; set; } = new List<NumWeights>();
+        public List<ConnWeights> SynapsesWeights { get; set; } = new List<ConnWeights>();
 
         // previous experience
         public List<PrevExp> Experience { get; set; } = new List<PrevExp>();
@@ -48,7 +48,7 @@ namespace WpfApp1
         // error
         public int Error { get; set; }
 
-        // local error (sum of errors) 
+        // local error (sum of errors)
         public int E { get; set; }
         
         // check direction of search for ProcessDistance method
@@ -59,17 +59,17 @@ namespace WpfApp1
         
         private static Random _rnd = new Random();
 
-        public Neuron(long num)
+        public Neuron(long id)
         {
-            NeurNum = num;
+            NeurId = id;
             Error = 0;
             NeurIndInput = -1;
         }
 
-        public Neuron(long num, float _x, float _y)
+        public Neuron(long id, float _x, float _y)
         {
             // initialization with default values except for neuron's number
-            NeurNum = num;
+            NeurId = id;
             Error = 0;
             NeurIndInput = -1;
 
@@ -112,9 +112,9 @@ namespace WpfApp1
             // calculating neuron's index value based on neuron's X and Y coordinates in visualisation
             NeurIndInput = MainWindow.CalculateIndex(Neur_X, Neur_Y);
 
-            MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 0));
-            MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 1));
-            MainWindow._TriangleEdges.Add((ushort)(num + (2 * num) + 2));
+            MainWindow._TriangleEdges.Add((ushort)(id + (2 * id) + 0));
+            MainWindow._TriangleEdges.Add((ushort)(id + (2 * id) + 1));
+            MainWindow._TriangleEdges.Add((ushort)(id + (2 * id) + 2));
 
             // adding purple color to the triangle which is representing one node
             MainWindow._ArrayColor.Add(1.0f);
@@ -293,25 +293,29 @@ namespace WpfApp1
 
     } // -->Neuron
 
-    public struct NumWeights // neuron's connections (synapses, axons) id_of_weight/weight_amount(X,Y)
+    public struct ConnWeights // neuron's connections' (synapses, axons) id_of_weight/weight_amount(X,Y)
     {
-        public NumWeights(int weight_id, long neigh_id, float weightX, float weightY)
+        // connection id
+        public int ConnId { get; set; }
+
+        // the id of the neighbour in the connection (depends on whether it's axon (output) or synapse (input))
+        public long NeighId { get; set; }
+
+        // input's weight id that is used in the linked list of 'weight ids' (starting from the strongest weight to the weakest) 
+        public int WeightDataId { get; private set; }      /////
+
+        // the amount of weight of each synapse/axon  //////////
+        public float WeightDataX { get; set; }
+        public float WeightDataY { get; set; }
+
+        public ConnWeights(int conn_id, int weight_id, long neigh_id, float weightX, float weightY)
         {
+            ConnId = conn_id;
             NeighId = neigh_id;
             WeightDataId = weight_id;
             WeightDataX = weightX;
             WeightDataY = weightY;
         }
-
-        // input's weight id that is used in the linked list of 'weight ids' (starting from the strongest weight to the weakest) 
-        public int WeightDataId { get; private set; }         // // // // // // // // // // // // // // /
-
-        // the amount of weight of each synapse/axon
-        public float WeightDataX { get; set; }
-        public float WeightDataY { get; set; }
-
-        // the id of neighbour in connection
-        public long NeighId { get; set; }
     }
 
     public struct PrevExp // neuron's experience                  // ~~~~~~~~~~~~?

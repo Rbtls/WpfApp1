@@ -10,7 +10,7 @@ namespace WpfApp1
     public class NeuralNetwork
     {
         //Main number of neurons
-        private long NeursNum;
+        private long NeursCount;
         public int Error_min { get; set; }
         public Neuron Winner { get; set; }
         public Neuron Secondwinner { get; set; }
@@ -34,46 +34,46 @@ namespace WpfApp1
             Lambda = 20;  // insert frequency 
             Age_max = 15; // maximum connection age
             Alpha = 0.5f; // variable used for mistakes adaptation
-            Eps_w = 0.028f; // Eps_w and Eps_n are used for weights adaptation
+            Eps_w = 0.028f; // Eps_w and Eps_n are used for weights adaptation (the distance between the node and the main input vector)
             Eps_n = 0.0006f;
             Max_nodes = 100; // maximum amount of nodes
 
             // Creating new connection
-            NeursNum = 0;
-            Connection _conn = new Connection(ref NeursNum);
+            NeursCount = 0;
+            Connection _conn = new Connection(ref NeursCount);
             ConnectionsList.AddFirst(_conn);
 
             // Debug
             //////////////////////adding new neuron
-            Connection _conn2 = new Connection(ref NeursNum, 2, ConnectionsList.Last.Value.ConnNeur2.Neur_X,
-                ConnectionsList.Last.Value.ConnNeur2.Neur_Y);
+            // adding new connection info (input) to the existing parent neuron (first parameter)
+            Connection _conn2 = new Connection(ref ConnectionsList.Last.Value.ConnNeur2, _conn.ConnId, ref NeursCount);
 
-            ConnectionsList.Last.Value.ConnNeur2.Synapses.Add(new NumWeights(1, _conn2.ConnNeur1.NeurNum, _conn2.ConnNeur1.Neur_X,
-                _conn2.ConnNeur1.Neur_Y));
-
+            // adding new connection to the ConnectionsList
             ConnectionsList.AddLast(_conn2);
+
         }
 
-        // set index in input vector (the space occupied by neuron)  //////////////////////////Work In Progress/////////
+        // set index in input vector (the space occupied by neuron)  //////WIP/////////
         public void SetInd(int ConnInd, int ind)
         {
             ConnectionsList.ElementAt(ConnInd).ConnNeur1.NeurIndInput = ind;
         }
 
-        public long GetNNnum()
+        // get number of neurons in the network
+        public long GetNetworkNeurCount()
         {
-            return NeursNum;
+            return NeursCount;
         }
 
         private Neuron FindNeuron(long uid)
         {
             foreach (Connection _conn in ConnectionsList)
             {
-                if (_conn.ConnNeur1.NeurNum == uid)
+                if (_conn.ConnNeur1.NeurId == uid)
                 {
                     return _conn.ConnNeur1;
                 }
-                else if (_conn.ConnNeur2.NeurNum == uid)
+                else if (_conn.ConnNeur2.NeurId == uid)
                 {
                     return _conn.ConnNeur2;
                 }
@@ -117,21 +117,11 @@ namespace WpfApp1
             //1.
             FindWinners();
 
-            //2. Searching for the nearest value in _Input vector (this way we can calculate the distance between the node and the value)
-            /*Thread Th1 = new Thread(new ThreadStart(Winner.ProcessDistance));
-
-            //setting the direction of search to forward
-            Winner.Forward = true;
-
-            //starting forward search in a separate thread in order to create a parallel search in both directions  
-            Th1.Start();
-
-            //starting backward search in the main thread
-            Winner.ProcessDistance();*/
+            //2. Searching for the nearest value in the _Input vector (this way we can calculate the distance between the node and the value)
 
             Parallel.Invoke(
                 () => Winner.ForwardSearch(),
-                () => Winner.BackwardSearch()                
+                () => Winner.BackwardSearch()
             );
 
             Winner.CompareDistances();
@@ -139,87 +129,133 @@ namespace WpfApp1
             //3. Changing winner's local error
             Winner.E += Winner.Error;
 
-            //4. Move winner and all of it's topological neighbours towards _Input vector using Delta value (calculated with Eps_w)
-            Adapt_weights(Winner.NeurNum);
+            //4. Move the winner and all of it's topological neighbours towards _Input vector using Delta value (calculated with Eps_w)
+            Adapt_weights(Winner.NeurId, true);
+            MoveNeighbours(Winner.NeurId);
 
-            //5. 
+            //5. Increase age of all connections coming out from the winner (axons) by 1 
+            for (int i = 0; i < Winner.AxonsWeights.Count; i++)
+            {
+                ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge += 1;
+            }
+
+            //6. If there is a connection between the first winner and the second winner change it's age to 0, else - create a connection between them
 
         }
-        
-        // Change neuron's and it's neighbours' positions  /////////////////////////////////WIP
-        public void Adapt_weights(long Id/*id of neuron*/)
+
+        // Change neuron's and it's neighbours' positions 
+        public void Adapt_weights(long parent_id, bool isWinner)
         {
+            Neuron ParentNeur;
+
+            // Reference to the parent neuron in the connection
+            if (FindNeuron(parent_id) != null)
+            {
+                ParentNeur = FindNeuron(parent_id);
+            }
+            else
+            {
+                return;
+            }
+
+            // Check whether the node is the winner node (Eps_w is for the winner, Eps_n - for the neighbours)
+            if (isWinner == false)
+            {
+                ParentNeur.Delta /= Eps_w;
+                ParentNeur.Delta *= Eps_n;
+            }
+
             // If neuron's position is to the left of the input array increase coordinates' values by the amount of Delta value
-            if (FindNeuron(Id).Left == false)
+            if (ParentNeur.Left == false)
             {
                 // Calculate the increase value (check whether delta + x is out of Vpw borders)
-                float IncRowsL = (FindNeuron(Id).Delta + FindNeuron(Id).Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
-                
+                float IncRowsL = (ParentNeur.Delta + ParentNeur.Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
+
                 // When Delta is out of the X limit, increase Y
                 if (IncRowsL > 1)
                 {
                     // Increasing Y by the amount of rows            
-                    FindNeuron(Id).Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
+                    ParentNeur.Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
 
                     // Reducing Delta value by the amount of rows for further increase of the X value
-                    FindNeuron(Id).Neur_X += (FindNeuron(Id).Delta - (int)IncRowsL);
+                    ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
 
                     // Assigning new Index value due to the change in coordinates
-                    FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
-                    FindNeuron(Id).ChangePosition();
+                    ParentNeur.ChangePosition();
                 }
                 else
                 {
                     // Increasing X value by the amount of Delta value
-                    FindNeuron(Id).Neur_X += FindNeuron(Id).Delta;
+                    ParentNeur.Neur_X += ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
-                    FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
-                    FindNeuron(Id).ChangePosition();
+                    ParentNeur.ChangePosition();
                 }
             }
             else // If neuron's position is to the right of the input array decrease coordinates' values by the amount of Delta value
             {
                 // Calculate the increase value
-                float IncRowsR = (FindNeuron(Id).Neur_X - FindNeuron(Id).Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!
+                float IncRowsR = (ParentNeur.Neur_X - ParentNeur.Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!
 
                 if (IncRowsR < 0)
                 {
                     // Decreasing Y by removing the integer part of Delta/X division (the amount of rows with width==X each)
-                    FindNeuron(Id).Neur_Y -= (int)(FindNeuron(Id).Delta / FindNeuron(Id).Neur_X) / MainWindow._pixelSize; 
+                    ParentNeur.Neur_Y -= (int)(ParentNeur.Delta / ParentNeur.Neur_X) / MainWindow._pixelSize;
 
                     // Reducing Delta value by the amount of rows for further decrease of the X value
-                    FindNeuron(Id).Neur_X -= (FindNeuron(Id).Delta - (FindNeuron(Id).Neur_Y * FindNeuron(Id).Neur_X));
+                    ParentNeur.Neur_X -= (ParentNeur.Delta - (ParentNeur.Neur_Y * ParentNeur.Neur_X));
 
                     // Assigning new Index value due to the change in coordinates
-                    FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
-                    FindNeuron(Id).ChangePosition();
+                    ParentNeur.ChangePosition();
                 }
                 else
                 {
                     // Decreasing X value by the amount of Delta value
-                    FindNeuron(Id).Neur_X -= FindNeuron(Id).Delta;
+                    ParentNeur.Neur_X -= ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
-                    FindNeuron(Id).NeurIndInput = MainWindow.CalculateIndex(FindNeuron(Id).Neur_X, FindNeuron(Id).Neur_Y);
+                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
-                    FindNeuron(Id).ChangePosition();
+                    ParentNeur.ChangePosition();
                 }
             }
+        }
 
-            //System.Threading.Thread.Sleep(1000);
+        public void MoveNeighbours(long parent_id)   
+        {
+            Neuron ParentNeur;
 
+            // reference to the parent neuron in the connection
+            if (FindNeuron(parent_id) != null)
+            {
+                ParentNeur = FindNeuron(parent_id);
+            }
+            else
+            {
+                return;
+            }
 
-            //////////////////////////////////////////////////////WIP
-            // Find neighbours' axons/synapses values related to parent neuron for further weight change
-            // Change neighbours positions
+            // Find neighbours' ids for further search of any connections related to the parent neuron
+            for (int i = 0; i < ParentNeur.AxonsWeights.Count; i++)
+            {
+                // Find neighbours' axons values related to the parent neuron for neighbours' position change towards MainInput
+                Adapt_weights(ParentNeur.AxonsWeights[i].NeighId, false);
+            }
+
+            for (int i = 0; i < ParentNeur.SynapsesWeights.Count; i++)
+            {
+                Adapt_weights(ParentNeur.SynapsesWeights[i].NeighId, false);
+            }
         }
 
     } //-->NeuralNetwork

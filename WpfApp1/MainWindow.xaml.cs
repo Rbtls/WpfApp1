@@ -407,7 +407,7 @@ namespace WpfApp1
 
             MainWindow._image.UnlockBits(_BtData);
 
-            TextBox1.Text += $"Number of neurons = {network.GetNNnum()} " + "\r\n";
+            TextBox1.Text += $"Number of neurons = {network.GetNetworkNeurCount()} " + "\r\n";
             TextBox1.Text += $"Length of bytes = {MainInput.Length} " + "\r\n" + "\r\n";
             // starts with 3 because first triangle is invisible
             TextBox1.Text += $"pixel#1 X = { _PositionArr[3].x} " + "\r\n";
