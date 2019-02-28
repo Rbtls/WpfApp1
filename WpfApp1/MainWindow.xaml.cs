@@ -346,7 +346,7 @@ namespace WpfApp1
             MainWindow._ConnEdges.Add((ushort)0);
             MainWindow._ConnEdges.Add((ushort)1);
 
-            for (int i=0; i<9; i++)
+            for (int i = 0; i < 9; i++)
             {
                 MainWindow._ArrayColor.Add(0.0f);
             }

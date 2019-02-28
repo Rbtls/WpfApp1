@@ -131,7 +131,7 @@ namespace WpfApp1
             MainWindow.debug2 = MainWindow.MainInput[4 * NeurIndInput + 1];
             MainWindow.debug3 = MainWindow.MainInput[4 * NeurIndInput];
             MainWindow.debug4 = NeurIndInput;
-        }
+        } //-->Neuron
 
         ~Neuron() { }
 
@@ -204,7 +204,7 @@ namespace WpfApp1
 
             // updating gl buffers in order to redraw nodes' positions
             MainWindow.Change_pos = true;
-        }
+        } //-->ChangePosition
         
         public void ForwardSearch()
         {
@@ -311,11 +311,12 @@ namespace WpfApp1
         public ConnWeights(int conn_id, int weight_id, long neigh_id, float weightX, float weightY)
         {
             ConnId = conn_id;
-            NeighId = neigh_id;
             WeightDataId = weight_id;
+            NeighId = neigh_id;
             WeightDataX = weightX;
             WeightDataY = weightY;
         }
+
     }
 
     public struct PrevExp // neuron's experience                  // ~~~~~~~~~~~~?
