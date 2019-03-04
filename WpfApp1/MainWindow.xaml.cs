@@ -505,7 +505,7 @@ namespace WpfApp1
             TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
         }
 
-        private void StopBtn(object sender, RoutedEventArgs e)
+        private void Stopbtn(object sender, RoutedEventArgs e)
         {
             Stop = true;
         }

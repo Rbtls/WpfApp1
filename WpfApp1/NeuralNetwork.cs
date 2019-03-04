@@ -56,7 +56,7 @@ namespace WpfApp1
         // set index in input vector (the space occupied by neuron)  
         public void SetInd(int ConnInd, int ind)
         {
-            ConnectionsList.ElementAt(ConnInd).FirstNeurInConn.NeurIndInput = ind;
+            ConnectionsList.ElementAt(ConnInd).FirstNeurInConn.NeurIndInInput = ind;
         }
 
         // get number of neurons in the network
@@ -138,7 +138,13 @@ namespace WpfApp1
                 //5. Increase age of all connections coming out from the winner (axons) by 1 
                 for (int i = 0; i < Winner.AxonsWeights.Count; i++)
                 {
-                    ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge += 1;
+                    foreach (Connection _conn in ConnectionsList)
+                    {
+                        if (_conn.ConnId == Winner.AxonsWeights[i].ConnId)
+                        {
+                            _conn.ConnAge += 1;
+                        }
+                    }
                 }
 
                 //6. If there is a connection between the first winner and the second winner change it's age to 0, else - create a connection between them
@@ -147,7 +153,13 @@ namespace WpfApp1
                 {
                     if (Winner.AxonsWeights[i].NeighId == SecondWinner.NeurId)
                     {
-                        ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge = 0;
+                        foreach (Connection _conn in ConnectionsList)
+                        {
+                            if (_conn.ConnId == Winner.AxonsWeights[i].ConnId)
+                            {
+                                _conn.ConnAge = 0;
+                            }
+                        }
                         IsConnected = true;
                     }
                 }
@@ -157,7 +169,13 @@ namespace WpfApp1
                     {
                         if (SecondWinner.AxonsWeights[i].NeighId == Winner.NeurId)
                         {
-                            ConnectionsList.ElementAt(SecondWinner.AxonsWeights[i].ConnId).ConnAge = 0;
+                            foreach (Connection _conn in ConnectionsList)
+                            {
+                                if (_conn.ConnId == SecondWinner.AxonsWeights[i].ConnId)
+                                {
+                                    _conn.ConnAge = 0;
+                                }
+                            }
                             IsConnected = true;
                         }
                     }
@@ -319,7 +337,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -330,7 +348,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X += ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -350,7 +368,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X -= (ParentNeur.Delta - (ParentNeur.Neur_Y * ParentNeur.Neur_X));
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -361,7 +379,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X -= ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -500,6 +518,7 @@ namespace WpfApp1
                 if (((_conn.FirstNeurInConn == parent_node) && (_conn.SecondNeurInConn == child_node)) || ((_conn.FirstNeurInConn == child_node) && (_conn.SecondNeurInConn == parent_node)))
                 {
                     ConnectionsList.Remove(_conn);
+                    break;
                 }
             }
             

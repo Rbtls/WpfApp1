@@ -13,7 +13,7 @@ namespace WpfApp1
         public long NeurId { get; private set; }
 
         // neuron's index in the input vector (the index of the pixel occupied by the neuron)
-        public int NeurIndInput { get; set; }
+        public int NeurIndInInput { get; set; }
 
         // neuron's position in visualisation (from 0 to 1.f)
         public float Neur_X { get; set; }
@@ -56,6 +56,11 @@ namespace WpfApp1
 
         // location of node compared to MainInput vector (Left == true => Increase Delta value in Adapt_weights function)
         public bool Left { get; set; }
+
+        // index of the right border pixel in relation to the current node  
+        public int RightBorder { get; set; }
+
+        public int LeftBorder { get; set; }
         
         private static Random _rnd = new Random();
 
@@ -63,7 +68,7 @@ namespace WpfApp1
         {
             NeurId = id;
             Error = 0;
-            NeurIndInput = -1;
+            NeurIndInInput = -1;
         }
 
         public Neuron(long id, float _x, float _y)
@@ -71,7 +76,7 @@ namespace WpfApp1
             // initialization with default values except for neuron's number
             NeurId = id;
             Error = 0;
-            NeurIndInput = -1;
+            NeurIndInInput = -1;
 
             // limit neuron's position so it wouldn't be possible for it to get out of the picture's borders
             if (((MainWindow.Vpw - ((MainWindow.Vpw - (MainWindow._Ratio * MainWindow.Vph)) / 2)) / MainWindow.Vpw) < _x)
@@ -110,7 +115,7 @@ namespace WpfApp1
             PosInd = MainWindow._Position.Count - 3;
 
             // calculating neuron's index value based on neuron's X and Y coordinates in visualisation
-            NeurIndInput = MainWindow.CalculateIndex(Neur_X, Neur_Y);
+            NeurIndInInput = MainWindow.CalculateIndex(Neur_X, Neur_Y);
 
             MainWindow._TriangleEdges.Add((ushort)(id + (2 * id) + 0));
             MainWindow._TriangleEdges.Add((ushort)(id + (2 * id) + 1));
@@ -127,10 +132,17 @@ namespace WpfApp1
             MainWindow._ArrayColor.Add(0.0f);
             MainWindow._ArrayColor.Add(1.0f);
 
-            MainWindow.debug1 = MainWindow.MainInput[4 * NeurIndInput + 2];
-            MainWindow.debug2 = MainWindow.MainInput[4 * NeurIndInput + 1];
-            MainWindow.debug3 = MainWindow.MainInput[4 * NeurIndInput];
-            MainWindow.debug4 = NeurIndInput;
+            MainWindow.debug1 = MainWindow.MainInput[4 * NeurIndInInput + 2];
+            MainWindow.debug2 = MainWindow.MainInput[4 * NeurIndInInput + 1];
+            MainWindow.debug3 = MainWindow.MainInput[4 * NeurIndInInput];
+            MainWindow.debug4 = NeurIndInInput;
+
+            // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
+            // rounding the rows value to farthest ten in order to acquire the right border value in the main input vector
+            RightBorder = ((int)(NeurIndInInput / MainWindow._image.Width) + 1) * MainWindow._image.Width;
+            // rounding the rows value to nearest ten in order to acquire the left border value in the main input vector
+            LeftBorder = ((int)(NeurIndInInput / MainWindow._image.Width)) * MainWindow._image.Width;
+
         } //-->Neuron
 
         ~Neuron() { }
@@ -209,15 +221,11 @@ namespace WpfApp1
         // Finds weight of the node if there's a change in pixel color to the right of the node. Used in multithread search of first occurence of pixel color change.
         public void ForwardSearch()
         {
-            // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
-            // rounding the rows value to farthest ten in order to aquire the right border value in the main input vector
-            int RightBorder = ((int)(NeurIndInput / MainWindow._image.Width) + 1) * MainWindow._image.Width;
-
             // checking whether the node has the index value
-            if ((NeurIndInput != (-1)) )
+            if ((NeurIndInInput != (-1)) )
             {
                 //for (int i = NeurIndInput; i < ((MainWindow.MainInput.Length / 4) - 2); i++)
-                for (int i = NeurIndInput; i < (RightBorder - 2); i++)
+                for (int i = NeurIndInInput; i < (RightBorder - 2); i++)
                 {
                     // searching for the first pixel that is different from black background
                     if (((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
@@ -234,14 +242,10 @@ namespace WpfApp1
         // Finds weight of the node if there's a change in pixel color to the left of the node. Used in multithread search of first occurence of pixel color change.
         public void BackwardSearch()
         {
-            // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
-            // rounding the rows value to nearest ten in order to aquire the left border value in the main input vector
-            int LeftBorder = ((int)(NeurIndInput / MainWindow._image.Width)) * MainWindow._image.Width;
-
             // checking whether the node has the index value
-            if ((NeurIndInput != (-1)))
+            if ((NeurIndInInput != (-1)))
             {
-                for (int i = NeurIndInput; i > (LeftBorder - 2); i--)
+                for (int i = NeurIndInInput; i > (LeftBorder - 2); i--)
                 {
                     if (((MainWindow.MainInput[4 * i] > 0) || (MainWindow.MainInput[(4 * i) + 1] > 0) || (MainWindow.MainInput[(4 * i) + 2] > 0)))
                     {
@@ -260,31 +264,31 @@ namespace WpfApp1
             if ((DistR != (-1)) && (DistL != (-1)))
             {
                 // Comparing two values representing the distance from the node towards the input vector        
-                if ((DistR - NeurIndInput) < (NeurIndInput - DistL))
+                if ((DistR - NeurIndInInput) < (NeurIndInInput - DistL))
                 {
-                    Error += (int)Math.Pow(Math.Abs((DistR - NeurIndInput) * MainWindow._pixelSize), 2);
+                    E += (int)Math.Pow(Math.Abs((DistR - NeurIndInInput) * MainWindow._pixelSize), 2);
                     // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
-                    Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInput));
+                    Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInInput));
                     // The Input vector value is located to the right from the node.
                     Left = false;
                 }
-                else if ((DistR - NeurIndInput) > (NeurIndInput - DistL)) // Left value is lower   
+                else if ((DistR - NeurIndInInput) > (NeurIndInInput - DistL)) // Left value is lower   
                 {
-                    Error += (int)Math.Pow(Math.Abs((NeurIndInput - DistL) * MainWindow._pixelSize), 2);
-                    Delta = NeuralNetwork.Eps_w * ((NeurIndInput - DistL));
+                    E += (int)Math.Pow(Math.Abs((NeurIndInInput - DistL) * MainWindow._pixelSize), 2);
+                    Delta = NeuralNetwork.Eps_w * ((NeurIndInInput - DistL));
                     Left = true;
                 }
             }
             else if (DistR != (-1))
             {
-                Error += (int)Math.Pow(Math.Abs((DistR - NeurIndInput) * MainWindow._pixelSize), 2);
-                Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInput));
+                E += (int)Math.Pow(Math.Abs((DistR - NeurIndInInput) * MainWindow._pixelSize), 2);
+                Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInInput));
                 Left = false;
             }
             else if (DistL != (-1))
             {
-                Error += (int)Math.Pow(Math.Abs((NeurIndInput - DistL) * MainWindow._pixelSize), 2);
-                Delta = NeuralNetwork.Eps_w * ((NeurIndInput - DistL));
+                E += (int)Math.Pow(Math.Abs((NeurIndInInput - DistL) * MainWindow._pixelSize), 2);
+                Delta = NeuralNetwork.Eps_w * ((NeurIndInInput - DistL));
                 Left = true;
             }
             else
