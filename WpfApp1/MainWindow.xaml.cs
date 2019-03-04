@@ -75,6 +75,8 @@ namespace WpfApp1
         _Input[4*ind] being the color value for the blue color, _Input[4*ind]+1 == green, _Input[4*ind]+2 == red)*/
         public static byte[] MainInput { get; set; } 
 
+        //Stop trigger
+        public static bool Stop { get; set; }
 
         public MainWindow()
         {
@@ -430,6 +432,8 @@ namespace WpfApp1
             //TextBox1.Text += $"winner.id = {network.Winner.NeurNum}" + "\r\n";
             //TextBox1.Text += $"winner.error = {network.Winner.Error}" + "\r\n";
             TestButton.IsEnabled = true;
+            StopButton.IsEnabled = true;
+            Stop = false;
         } //-->Train()
 
         private void Open(object sender, RoutedEventArgs e)
@@ -499,6 +503,11 @@ namespace WpfApp1
             TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
             TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
             TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
+        }
+
+        private void StopBtn(object sender, RoutedEventArgs e)
+        {
+            Stop = true;
         }
     } //-->MainWindow
        

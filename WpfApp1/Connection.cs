@@ -8,21 +8,21 @@ namespace WpfApp1
 {
     public class Connection
     {
-        // connection id
+        // Connection id
         public int ConnId { get; set; }
-        // first & second neurons in the connection
+        // First & second neurons in the connection
         public Neuron FirstNeurInConn;
         public Neuron SecondNeurInConn;
-        // ids of nodes that should be connected 
+        // Ids of nodes that should be connected 
         public long Node_id1 { get; set; }
         public long Node_id2 { get; set; }
-        // connection weight & age
+        // Connection weight & age
         public float ConnWeight { get; set; }
         public int ConnAge { get; set; }
-        // random value for new node's location
+        // Random value for new node's location
         private static Random rnd = new Random();
 
-        // connection between the first two neurons when we don't have the id of the parent neuron
+        // Connection between the first two neurons when we don't have the id of the parent neuron
         public Connection(ref long num)
         {
             ConnId = 0;
@@ -48,7 +48,7 @@ namespace WpfApp1
             MainWindow.GlRender();
         }
 
-        // creating connection when parent neuron already exists
+        // Creates connection when parent neuron already exists
         public Connection(ref Neuron parent_node, int previous_conn_id, ref long neur_num)
         {
             FirstNeurInConn = parent_node;
@@ -83,6 +83,7 @@ namespace WpfApp1
             MainWindow.GlRender();
         }
 
+        // Creates connection between two existing neurons
         public Connection (ref Neuron parent_node, ref Neuron child_node, int previous_conn_id)
         {
             long parent_node_id = parent_node.NeurId;
@@ -110,6 +111,6 @@ namespace WpfApp1
 
             MainWindow.GlRender();
         }
-                
+                               
     } //-->Connection
 }

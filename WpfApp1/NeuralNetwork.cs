@@ -11,11 +11,11 @@ namespace WpfApp1
     {
         //Main number of neurons
         private long NeursCount;
-        public int Error_min { get; set; }
+        public float Error_min { get; set; }
         public Neuron Winner;
         public Neuron SecondWinner;
         public int Iteration_number { get; set; }
-
+        public float MaxLocalError { get; set; }
         public int Max_nodes { get; set; }
         public int Lambda { get; set; }
         public int Age_max { get; set; }
@@ -53,7 +53,7 @@ namespace WpfApp1
 
         }
 
-        // set index in input vector (the space occupied by neuron)  //////WIP/////////
+        // set index in input vector (the space occupied by neuron)  
         public void SetInd(int ConnInd, int ind)
         {
             ConnectionsList.ElementAt(ConnInd).FirstNeurInConn.NeurIndInput = ind;
@@ -79,9 +79,9 @@ namespace WpfApp1
                 }
             }
             return null;
-        }
+        } //-->FindNeuron
 
-        private void FindWinners() ////////////////Work In Progress////////////
+        private void FindWinners() 
         {
             if (Error_min == 0)
             {
@@ -107,148 +107,179 @@ namespace WpfApp1
                     }
                 }
             }
-        }
+        } //-->FindWinners
 
         public void ProcessVector()
         {
-            //0. Increase iteration number
-            Iteration_number++;
-
-            //1.
-            FindWinners();
-
-            //2. Searching for the nearest value in the _Input vector (this way we can calculate the distance between the node and the value)
-
-            Parallel.Invoke(
-                () => Winner.ForwardSearch(),
-                () => Winner.BackwardSearch()
-            );
-
-            Winner.CompareDistances();
-
-            //3. Changing winner's local error
-            Winner.E += Winner.Error;
-
-            //4. Move the winner and all of it's topological neighbours towards _Input vector using Delta value (calculated with Eps_w)
-            Adapt_weights(Winner.NeurId, true);
-            MoveNeighbours(Winner.NeurId);
-
-            //5. Increase age of all connections coming out from the winner (axons) by 1 
-            for (int i = 0; i < Winner.AxonsWeights.Count; i++)
+            while (MainWindow.Stop == false)
             {
-                ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge += 1;
-            }
+                //0. Increase iteration number
+                Iteration_number++;
 
-            //6. If there is a connection between the first winner and the second winner change it's age to 0, else - create a connection between them
-            bool IsConnected = false;
-            for (int i = 0; i < Winner.AxonsWeights.Count; i++)
-            {
-                if (Winner.AxonsWeights[i].NeighId == SecondWinner.NeurId)
+                //1.
+                FindWinners();
+
+                //2. Searching for the nearest value in the _Input vector (this way we can calculate the distance between the node and the value)
+
+                Parallel.Invoke(
+                    () => Winner.ForwardSearch(),
+                    () => Winner.BackwardSearch()
+                );
+                // Finding shortest distance that will be the weight of the winner node.
+                Winner.CompareDistances();
+
+                //3. Changing winner's local error
+                Winner.E += Winner.Error;
+
+                //4. Move the winner and all of it's topological neighbours towards _Input vector using Delta value (calculated with Eps_w)
+                Adapt_weights(Winner.NeurId, true);
+                MoveNeighbours(Winner.NeurId);
+
+                //5. Increase age of all connections coming out from the winner (axons) by 1 
+                for (int i = 0; i < Winner.AxonsWeights.Count; i++)
                 {
-                    ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge = 0;
-                    IsConnected = true;
+                    ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge += 1;
                 }
-            }
-            if (IsConnected == false)
-            {
-                for (int i = 0; i < SecondWinner.AxonsWeights.Count; i++)
+
+                //6. If there is a connection between the first winner and the second winner change it's age to 0, else - create a connection between them
+                bool IsConnected = false;
+                for (int i = 0; i < Winner.AxonsWeights.Count; i++)
                 {
-                    if (SecondWinner.AxonsWeights[i].NeighId == Winner.NeurId)
+                    if (Winner.AxonsWeights[i].NeighId == SecondWinner.NeurId)
                     {
-                        ConnectionsList.ElementAt(SecondWinner.AxonsWeights[i].ConnId).ConnAge = 0;
+                        ConnectionsList.ElementAt(Winner.AxonsWeights[i].ConnId).ConnAge = 0;
                         IsConnected = true;
                     }
                 }
-                // If there's no connection between the first winner and the second winner (or vice versa) create new connection between them 
                 if (IsConnected == false)
                 {
-                    Connection winners_conn = new Connection(ref Winner, ref SecondWinner, ConnectionsList.Last.Value.ConnId);
-                    ConnectionsList.AddLast(winners_conn);
-                    IsConnected = true;
-                }
-            }
-
-            //7. Remove all connections with age greater than Age_max.
-            // Trigger sygnaling the end of foreach search to stop reiteration of aforementioned search.
-            int Trig = 0;
-            // Variable representing each iteration of foreach search.
-            int LoopCount = 0;
-            while (true)
-            {
-                LoopCount = 0;
-                foreach (Connection _conn in ConnectionsList)
-                {
-                    if (_conn.ConnAge > Age_max)
+                    for (int i = 0; i < SecondWinner.AxonsWeights.Count; i++)
                     {
-                        // remove any info about inputs/outputs between two neurons in the connection
-                        for (int i = 0; i < _conn.FirstNeurInConn.AxonsWeights.Count; i++)
+                        if (SecondWinner.AxonsWeights[i].NeighId == Winner.NeurId)
                         {
-                            if (_conn.FirstNeurInConn.AxonsWeights.ElementAt(i).NeighId == _conn.SecondNeurInConn.NeurId)
-                            {
-                                _conn.FirstNeurInConn.AxonsWeights.RemoveAt(i);
-                            }
+                            ConnectionsList.ElementAt(SecondWinner.AxonsWeights[i].ConnId).ConnAge = 0;
+                            IsConnected = true;
                         }
-                        for (int i = 0; i < _conn.SecondNeurInConn.SynapsesWeights.Count; i++)
+                    }
+                    // If there's no connection between the first winner and the second winner (or vice versa) create new connection between them 
+                    if (IsConnected == false)
+                    {
+                        Connection winners_conn = new Connection(ref Winner, ref SecondWinner, ConnectionsList.Last.Value.ConnId);
+                        ConnectionsList.AddLast(winners_conn);
+                        IsConnected = true;
+                    }
+                }
+
+                //7. Remove all connections with age greater than Age_max.
+                // Trigger sygnaling the end of foreach search to stop reiteration of aforementioned search.
+                int Trig = 0;
+                // Variable representing each iteration of foreach search.
+                int LoopCount = 0;
+                while (true)
+                {
+                    LoopCount = 0;
+                    foreach (Connection _conn in ConnectionsList)
+                    {
+                        if (_conn.ConnAge > Age_max)
                         {
-                            if (_conn.SecondNeurInConn.SynapsesWeights.ElementAt(i).NeighId == _conn.FirstNeurInConn.NeurId)
+                            // remove any info about inputs/outputs between two neurons in the connection
+                            for (int i = 0; i < _conn.FirstNeurInConn.AxonsWeights.Count; i++)
                             {
-                                _conn.SecondNeurInConn.SynapsesWeights.RemoveAt(i);
+                                if (_conn.FirstNeurInConn.AxonsWeights.ElementAt(i).NeighId == _conn.SecondNeurInConn.NeurId)
+                                {
+                                    _conn.FirstNeurInConn.AxonsWeights.RemoveAt(i);
+                                }
                             }
+                            for (int i = 0; i < _conn.SecondNeurInConn.SynapsesWeights.Count; i++)
+                            {
+                                if (_conn.SecondNeurInConn.SynapsesWeights.ElementAt(i).NeighId == _conn.FirstNeurInConn.NeurId)
+                                {
+                                    _conn.SecondNeurInConn.SynapsesWeights.RemoveAt(i);
+                                }
+                            }
+                            ConnectionsList.Remove(_conn);
+                            break;
                         }
-                        ConnectionsList.Remove(_conn);
+                        // The end of foreach search (no need to reiterate)
+                        if (LoopCount == (ConnectionsList.Count - 1))
+                        {
+                            Trig = 1;
+                        }
+                        LoopCount += 1;
+                    }
+                    if (Trig == 1)
+                    {
                         break;
                     }
-                    // The end of foreach search (no need to reiterate)
-                    if ( LoopCount == (ConnectionsList.Count - 1))
-                    {
-                        Trig = 1;
-                    }
-                    LoopCount += 1;
                 }
-                if (Trig == 1)
-                {
-                    break;
-                }
-            }
 
-            Trig = 0;
-            LoopCount = 0;
-            while (true)
-            {
+                Trig = 0;
                 LoopCount = 0;
-                foreach (Connection _conn in ConnectionsList)
+                while (true)
                 {
-                    // If after deletion there are any neurons without connections left - remove them.
-                    if ((_conn.FirstNeurInConn.AxonsWeights.Count == 0) && (_conn.FirstNeurInConn.SynapsesWeights.Count == 0))
+                    LoopCount = 0;
+                    foreach (Connection _conn in ConnectionsList)
                     {
-                        _conn.FirstNeurInConn = null;
+                        // If after deletion there are any neurons without connections left - remove them.
+                        if ((_conn.FirstNeurInConn.AxonsWeights.Count == 0) && (_conn.FirstNeurInConn.SynapsesWeights.Count == 0))
+                        {
+                            _conn.FirstNeurInConn = null;
+                        }
+                        if ((_conn.SecondNeurInConn.AxonsWeights.Count == 0) && (_conn.SecondNeurInConn.SynapsesWeights.Count == 0))
+                        {
+                            _conn.SecondNeurInConn = null;
+                        }
+                        // If there's a connection without neurons - remove it.
+                        if ((_conn.FirstNeurInConn == null) && (_conn.SecondNeurInConn == null))
+                        {
+                            ConnectionsList.Remove(_conn);
+                            break;
+                        }
+                        // the end of foreach search (no need to reiterate)
+                        if (LoopCount == (ConnectionsList.Count - 1))
+                        {
+                            Trig = 1;
+                        }
+                        LoopCount += 1;
                     }
-                    if ((_conn.SecondNeurInConn.AxonsWeights.Count == 0) && (_conn.SecondNeurInConn.SynapsesWeights.Count == 0))
+                    if (Trig == 1)
                     {
-                        _conn.SecondNeurInConn = null;
-                    }
-                    // If there's a connection without neurons - remove it.
-                    if ((_conn.FirstNeurInConn == null) && (_conn.SecondNeurInConn == null))
-                    {
-                        ConnectionsList.Remove(_conn);
                         break;
                     }
-                    // the end of foreach search (no need to reiterate)
-                    if (LoopCount == (ConnectionsList.Count - 1))
-                    {
-                        Trig = 1;
-                    }
-                    LoopCount += 1;
                 }
-                if (Trig == 1)
+
+                //8. If the iteration number equals Lambda and there's no limit reached - create new node with the rules described below.
+                if ((Iteration_number % Lambda == 0) && (NeursCount < Max_nodes))
                 {
-                    break;
+                    // Find neuron with the largest local error.
+                    Neuron NeurMaxLocalE = FindMaxLocalError();
+
+                    // Among the neighbours with the largest local error find the one with the largest local error.
+                    Neuron NeighMaxLocalE = FindNeighMaxLocalError(ref NeurMaxLocalE);
+
+                    // Search for the weight of the node (DistL & DistR values).
+                    Parallel.Invoke(
+                    () => NeurMaxLocalE.ForwardSearch(),
+                    () => NeurMaxLocalE.BackwardSearch()
+                    );
+                    // Find the nearest value in Input vector in relation to the node.
+                    NeurMaxLocalE.CompareDistances();
+
+                    Parallel.Invoke(
+                    () => NeighMaxLocalE.ForwardSearch(),
+                    () => NeighMaxLocalE.BackwardSearch()
+                    );
+                    // Find the nearest value in Input vector in relation to the node.
+                    NeighMaxLocalE.CompareDistances();
+                                       
+                    // Create new neuron between two previous neurons and replace connections accordingly.
+                    // Reduce error values of the previous neurons and replace error value of the newly placed neuron.
+                    InsertNeuron(ref NeurMaxLocalE, ref NeighMaxLocalE);        
                 }
+
+                //9. 
             }
-
-            //8. If the iteration number equals Lambda and there's no limit reached - create new node with rules described below.
-
-        }
+        } //-->ProcessVector
 
         // Change neuron's and it's neighbours' positions 
         public void Adapt_weights(long parent_id, bool isWinner)
@@ -336,7 +367,7 @@ namespace WpfApp1
                     ParentNeur.ChangePosition();
                 }
             }
-        }
+        } //-->Adapt_weights
 
         public void MoveNeighbours(long parent_id)   
         {
@@ -363,7 +394,120 @@ namespace WpfApp1
             {
                 Adapt_weights(ParentNeur.SynapsesWeights[i].NeighId, false);
             }
-        }
+        } //-->MoveNeighbours
+
+        public ref Neuron FindMaxLocalError()
+        {
+            // Find neuron with the largest local error.
+            MaxLocalError = 0;
+            ref Neuron NeurMax = ref Winner;
+            foreach (Connection _conn in ConnectionsList)
+            {
+                if (_conn.FirstNeurInConn.E > MaxLocalError)
+                {
+                    MaxLocalError = _conn.FirstNeurInConn.E;
+                    NeurMax = _conn.FirstNeurInConn;
+                }
+                else if (_conn.SecondNeurInConn.E > MaxLocalError)
+                {
+                    MaxLocalError = _conn.SecondNeurInConn.E;
+                    NeurMax = _conn.SecondNeurInConn;
+                }
+            }
+            return ref NeurMax;
+        } //-->FindMaxLocalError
+
+        public ref Neuron FindNeighMaxLocalError(ref Neuron NeurMaxLocalE)
+        {
+            // Among the neighbours with the largest local error find the one with the largest local error.
+            float MaxLocalE = 0;
+            ref Neuron NeighMaxLocalE = ref SecondWinner;
+            foreach (ConnWeights _synapse in NeurMaxLocalE.SynapsesWeights)
+            {
+                Neuron Neighbour = FindNeuron(_synapse.NeighId);
+                if (Neighbour.E > MaxLocalE)
+                {
+                    MaxLocalE = Neighbour.E;
+                }
+            }
+            foreach (ConnWeights _axon in NeurMaxLocalE.AxonsWeights)
+            {
+                Neuron Neighbour = FindNeuron(_axon.NeighId);
+                if (Neighbour.E > MaxLocalE)
+                {
+                    MaxLocalE = Neighbour.E;
+                }
+            }
+            return ref NeighMaxLocalE;
+        } //-->FindNeighMaxLocalError
+
+        // Inserts new neuron between already established connection
+        public void InsertNeuron(ref Neuron parent_node, ref Neuron child_node)
+        {
+            // Creating new node R
+            Neuron Node_R = new Neuron(++NeursCount);
+
+            // Adding two connections (U and V) between R and two previous nodes
+            Connection Conn_U = new Connection(ref parent_node, ref Node_R, ConnectionsList.Last.Value.ConnId);
+            ConnectionsList.AddLast(Conn_U);
+
+            Connection Conn_V = new Connection(ref child_node, ref Node_R, ConnectionsList.Last.Value.ConnId);
+            ConnectionsList.AddLast(Conn_V);
+
+            // Weight of R (the distance between the node and the main input vector) equals sum of weights of two previous nodes divided by two.
+            // Choosing weight value of each node. 
+            if ((parent_node.Left == false) && (child_node.Left == false))
+            {
+               Node_R.DistR = (parent_node.DistR + child_node.DistR) / 2;
+               Node_R.Left = false;
+            }
+            else if (((parent_node.Left == true) && (child_node.Left == false)) || ((parent_node.Left == false) && (child_node.Left == true)))
+            {
+                if (parent_node.DistL > child_node.DistR)
+                {
+                    Node_R.DistR = (parent_node.DistR + child_node.DistL) / 2;
+                    Node_R.Left = false;
+                }
+                else
+                {
+                    Node_R.DistL = (parent_node.DistR + child_node.DistL) / 2;
+                    Node_R.Left = true;
+                }
+            }
+            else if ((parent_node.Left == true) && (child_node.Left == true))
+            {
+                Node_R.DistL = (parent_node.DistL + child_node.DistL) / 2;
+                Node_R.Left = true;
+            }
+
+            // Removing connection between two previous nodes (if such connection exists)
+            for (int i = 0; i < parent_node.AxonsWeights.Count; i++)
+            {
+                if (parent_node.AxonsWeights.ElementAt(i).NeighId == child_node.NeurId)
+                {
+                    parent_node.AxonsWeights.RemoveAt(i);
+                }
+            }
+            for (int i = 0; i < child_node.SynapsesWeights.Count; i++)
+            {
+                if (child_node.SynapsesWeights.ElementAt(i).NeighId == parent_node.NeurId)
+                {
+                    child_node.SynapsesWeights.RemoveAt(i);
+                }
+            }
+            foreach (Connection _conn in ConnectionsList)
+            {
+                if (((_conn.FirstNeurInConn == parent_node) && (_conn.SecondNeurInConn == child_node)) || ((_conn.FirstNeurInConn == child_node) && (_conn.SecondNeurInConn == parent_node)))
+                {
+                    ConnectionsList.Remove(_conn);
+                }
+            }
+            
+            // Decreasing error values for both previous nodes and setting new error value for R
+            parent_node.E = Alpha * parent_node.E;
+            child_node.E = Alpha * child_node.E;
+            Node_R.E = parent_node.E;
+        } //-->InsertNeuron
 
     } //-->NeuralNetwork
 }

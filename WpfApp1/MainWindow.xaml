@@ -11,14 +11,15 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Button Content="Quit" Click="CloseButton_Click" HorizontalAlignment="Left" Margin="408,534,0,0" VerticalAlignment="Top" Width="74" Height="22"/>
-        <Button x:Name="TrainButton" Content="Train" Click="Train" HorizontalAlignment="Left" Margin="408,471,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.493,0.55" Height="20" IsEnabled="False"/>
+        <Button Content="Quit" Click="CloseButton_Click" HorizontalAlignment="Left" Margin="407,534,0,0" VerticalAlignment="Top" Width="74" Height="22"/>
+        <Button x:Name="TrainButton" Content="Train" Click="Train" HorizontalAlignment="Left" Margin="407,460,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.493,0.55" Height="20" IsEnabled="False"/>
         <TextBox x:Name="TextBox1" HorizontalAlignment="Left" Height="120" Margin="10,436,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="374"/>
 
         <WindowsFormsHost x:Name="HostControl" Loaded="HostControl_Loaded" Margin="10,10,10,155">
             <opengl:GlControl ContextCreated="GlControl_ContextCreated" Render="GlControl_Render" Animation="True" SwapInterval="1"/>
         </WindowsFormsHost>
         <Button Content="Open" Click="Open" HorizontalAlignment="Left" Margin="407,436,0,0" VerticalAlignment="Top" Width="75"/>
-        <Button x:Name="TestButton" Content="Test" Click="Testbtn" HorizontalAlignment="Left" Margin="408,496,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.493,0.55" Height="20" IsEnabled="False"/>
+        <Button x:Name="TestButton" Content="Test" Click="Testbtn" HorizontalAlignment="Left" Margin="406,509,0,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.493,0.55" Height="20" IsEnabled="False"/>
+        <Button x:Name="StopButton" Content="Stop" Click="Stopbtn" HorizontalAlignment="Left" Margin="407,485,0,0" VerticalAlignment="Top" Width="75" IsEnabled="False"/>
     </Grid>
 </Window>

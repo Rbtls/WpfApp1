@@ -19,16 +19,16 @@ namespace WpfApp1
         public float Neur_X { get; set; }
         public float Neur_Y { get; set; }
 
-        // the distance needed to move the node after processing 
+        // the distance needed to move the node after the distance processing 
         public float Delta { get; set; }
 
         // position index in _Position list
         private int PosInd { get; set; }
 
         // nearest value to the left from the node
-        private int DistL { get; set; }
+        public int DistL { get; set; }
 
-        private int DistR { get; set; }
+        public int DistR { get; set; }
 
         /* // output axon connection to the id
          public int Next_num { get => next_num; set => next_num = value; }
@@ -46,10 +46,10 @@ namespace WpfApp1
         public List<PrevExp> Experience { get; set; } = new List<PrevExp>();
 
         // error
-        public int Error { get; set; }
+        public float Error { get; set; }
 
-        // local error (sum of errors)
-        public int E { get; set; }
+        // local error (sum of all errors that occured)
+        public float E { get; set; }                
         
         // check direction of search for ProcessDistance method
         public bool Forward { get; set; }
@@ -206,6 +206,7 @@ namespace WpfApp1
             MainWindow.Change_pos = true;
         } //-->ChangePosition
         
+        // Finds weight of the node if there's a change in pixel color to the right of the node. Used in multithread search of first occurence of pixel color change.
         public void ForwardSearch()
         {
             // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
@@ -229,7 +230,8 @@ namespace WpfApp1
                 }
             }
         }
-
+        
+        // Finds weight of the node if there's a change in pixel color to the left of the node. Used in multithread search of first occurence of pixel color change.
         public void BackwardSearch()
         {
             // getting the amount of rows by dividing the NeurIndInput value by the _image.Width value
@@ -252,17 +254,18 @@ namespace WpfApp1
             }
         }
 
-        // checking the distance between the node and the input vector to find whether the value is located to the right/left from the node
+        // Checks the distance between the node and the input vector to find the shortest distance where the value is located.
         public void CompareDistances()
         {
             if ((DistR != (-1)) && (DistL != (-1)))
             {
-                // Comparing two values representing the length from the node towards the input vector        
+                // Comparing two values representing the distance from the node towards the input vector        
                 if ((DistR - NeurIndInput) < (NeurIndInput - DistL))
                 {
                     Error += (int)Math.Pow(Math.Abs((DistR - NeurIndInput) * MainWindow._pixelSize), 2);
-                    // changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
+                    // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
                     Delta = NeuralNetwork.Eps_w * ((DistR - NeurIndInput));
+                    // The Input vector value is located to the right from the node.
                     Left = false;
                 }
                 else if ((DistR - NeurIndInput) > (NeurIndInput - DistL)) // Left value is lower   
@@ -289,9 +292,9 @@ namespace WpfApp1
                 // if there were no matches in both directions
 
             }
-        }
+        } //-->CompareDistances
 
-    } // -->Neuron
+    } //-->Neuron
 
     public struct ConnWeights // neuron's connections' (synapses, axons) id_of_weight/weight_amount(X,Y)
     {
