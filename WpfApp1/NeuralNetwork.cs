@@ -46,10 +46,10 @@ namespace WpfApp1
             // Debug
             //////////////////////adding new neuron
             // adding new connection info (input) to the existing parent neuron (first parameter)
-            Connection _conn2 = new Connection(ref ConnectionsList.Last.Value.SecondNeurInConn, _conn.ConnId, ref NeursCount);
+            //Connection _conn2 = new Connection(ref ConnectionsList.Last.Value.SecondNeurInConn, _conn.ConnId, ref NeursCount);
 
             // adding new connection to the ConnectionsList
-            ConnectionsList.AddLast(_conn2);
+           // ConnectionsList.AddLast(_conn2);
 
         }
 
@@ -87,7 +87,7 @@ namespace WpfApp1
             {
                 Error_min = ConnectionsList.ElementAt(0).FirstNeurInConn.Error;
                 Winner = ConnectionsList.ElementAt(0).FirstNeurInConn;
-                SecondWinner = Winner;
+                SecondWinner = ConnectionsList.ElementAt(0).SecondNeurInConn; ;
             }
             foreach (Connection _conn in ConnectionsList)
             {
@@ -111,8 +111,8 @@ namespace WpfApp1
 
         public void ProcessVector()
         {
-            while (MainWindow.Stop == false)
-            {
+           // while ((MainWindow.Stop == false) || (NeursCount < Max_nodes))
+           // {
                 //0. Increase iteration number
                 Iteration_number++;
 
@@ -267,7 +267,7 @@ namespace WpfApp1
                 }
 
                 //8. If the iteration number equals Lambda and there's no limit reached - create new node with the rules described below.
-                if ((Iteration_number % Lambda == 0) && (NeursCount < Max_nodes))
+                if ((NeursCount > 2) && (Iteration_number % Lambda == 0) && (NeursCount < Max_nodes))
                 {
                     // Find neuron with the largest local error.
                     Neuron NeurMaxLocalE = FindMaxLocalError();
@@ -283,6 +283,7 @@ namespace WpfApp1
                     // Find the nearest value in Input vector in relation to the node.
                     NeurMaxLocalE.CompareDistances();
 
+                    // Search for the weight of the neighbour node.
                     Parallel.Invoke(
                     () => NeighMaxLocalE.ForwardSearch(),
                     () => NeighMaxLocalE.BackwardSearch()
@@ -294,9 +295,18 @@ namespace WpfApp1
                     // Reduce error values of the previous neurons and replace error value of the newly placed neuron.
                     InsertNeuron(ref NeurMaxLocalE, ref NeighMaxLocalE);        
                 }
+                else if (NeursCount == 2)
+                {
+                    InsertNeuron(ref Winner, ref SecondWinner);
+                }
 
-                //9. 
-            }
+                //9. Decrease all error variables for all nodes by a Beta value
+                foreach (Connection _conn in ConnectionsList)
+                {
+                    _conn.FirstNeurInConn.E *= Beta;
+                    _conn.SecondNeurInConn.E *= Beta;
+                }
+            //}
         } //-->ProcessVector
 
         // Change neuron's and it's neighbours' positions 
@@ -385,6 +395,7 @@ namespace WpfApp1
                     ParentNeur.ChangePosition();
                 }
             }
+            MainWindow.GlRender();
         } //-->Adapt_weights
 
         public void MoveNeighbours(long parent_id)   
@@ -446,6 +457,7 @@ namespace WpfApp1
                 if (Neighbour.E > MaxLocalE)
                 {
                     MaxLocalE = Neighbour.E;
+                    NeighMaxLocalE = Neighbour;
                 }
             }
             foreach (ConnWeights _axon in NeurMaxLocalE.AxonsWeights)
@@ -454,6 +466,7 @@ namespace WpfApp1
                 if (Neighbour.E > MaxLocalE)
                 {
                     MaxLocalE = Neighbour.E;
+                    NeighMaxLocalE = Neighbour;
                 }
             }
             return ref NeighMaxLocalE;
@@ -462,8 +475,38 @@ namespace WpfApp1
         // Inserts new neuron between already established connection
         public void InsertNeuron(ref Neuron parent_node, ref Neuron child_node)
         {
-            // Creating new node R
-            Neuron Node_R = new Neuron(++NeursCount);
+            float NodeR_X = 0f;
+            float NodeR_Y = 0f;
+
+            if (parent_node.Neur_X >= child_node.Neur_X)
+            {
+                NodeR_X = child_node.Neur_X + ((parent_node.Neur_X - child_node.Neur_X) / 2f);
+            }
+            else
+            {
+                NodeR_X = parent_node.Neur_X + ((child_node.Neur_X - parent_node.Neur_X) / 2f);
+            }
+
+            if (parent_node.Neur_Y >= child_node.Neur_Y)
+            {
+                NodeR_Y = child_node.Neur_Y + ((parent_node.Neur_Y - child_node.Neur_Y) / 2f);
+            }
+            else
+            {
+                NodeR_Y = parent_node.Neur_Y + ((child_node.Neur_Y - parent_node.Neur_Y) / 2f);
+            }
+
+            if (NodeR_X > 1.0f)
+            {
+                NodeR_X = 1.0f;
+            }
+            if (NodeR_Y > 1.0f)
+            {
+                NodeR_Y = 1.0f;
+            }
+
+            // Creating new node R. Node's position has to be inbetween two previous nodes.
+            Neuron Node_R = new Neuron(++NeursCount, NodeR_X, NodeR_Y);
 
             // Adding two connections (U and V) between R and two previous nodes
             Connection Conn_U = new Connection(ref parent_node, ref Node_R, ConnectionsList.Last.Value.ConnId);
@@ -526,6 +569,7 @@ namespace WpfApp1
             parent_node.E = Alpha * parent_node.E;
             child_node.E = Alpha * child_node.E;
             Node_R.E = parent_node.E;
+            MainWindow.GlRender();
         } //-->InsertNeuron
 
     } //-->NeuralNetwork

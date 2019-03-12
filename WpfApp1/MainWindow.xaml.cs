@@ -416,8 +416,8 @@ namespace WpfApp1
             TextBox1.Text += $"pixel#1 Y = { _PositionArr[3].y} " + "\r\n";
             TextBox1.Text += $"pixel#2 X = { _PositionArr[6].x} " + "\r\n";
             TextBox1.Text += $"pixel#2 Y = { _PositionArr[6].y} " + "\r\n";
-            TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
-            TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
+           // TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
+          //  TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
             TextBox1.Text += $"debug1 = {debug1} " + "\r\n";
             TextBox1.Text += $"debug2 = {debug2} " + "\r\n";
             TextBox1.Text += $"debug3 = {debug3} " + "\r\n";
@@ -431,6 +431,7 @@ namespace WpfApp1
 
             //TextBox1.Text += $"winner.id = {network.Winner.NeurNum}" + "\r\n";
             //TextBox1.Text += $"winner.error = {network.Winner.Error}" + "\r\n";
+            //TextBox1.ScrollToEnd();
             TestButton.IsEnabled = true;
             StopButton.IsEnabled = true;
             Stop = false;
@@ -496,13 +497,15 @@ namespace WpfApp1
             //TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
             //TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
             TextBox1.Text += "\r\n";
+            TextBox1.Text += $"Number of neurons = {network.GetNetworkNeurCount()} " + "\r\n";
             TextBox1.Text += $"pixel#1 X = { _PositionArr[3].x} " + "\r\n";
             TextBox1.Text += $"pixel#1 Y = { _PositionArr[3].y} " + "\r\n";
             TextBox1.Text += $"pixel#2 X = { _PositionArr[6].x} " + "\r\n";
             TextBox1.Text += $"pixel#2 Y = { _PositionArr[6].y} " + "\r\n";
-            TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
-            TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
+           // TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
+           // TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
             TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
+            TextBox1.ScrollToEnd();
         }
 
         private void Stopbtn(object sender, RoutedEventArgs e)
