@@ -56,7 +56,7 @@ namespace WpfApp1
         // set index in input vector (the space occupied by neuron)  
         public void SetInd(int ConnInd, int ind)
         {
-            ConnectionsList.ElementAt(ConnInd).FirstNeurInConn.NeurIndInInput = ind;
+            ConnectionsList.ElementAt(ConnInd).FirstNeurInConn.NeurInInputIndex = ind;
         }
 
         // get number of neurons in the network
@@ -278,7 +278,9 @@ namespace WpfApp1
                     // Search for the weight of the node (DistL & DistR values).
                     Parallel.Invoke(
                     () => NeurMaxLocalE.ForwardSearch(),
-                    () => NeurMaxLocalE.BackwardSearch()
+                    () => NeurMaxLocalE.BackwardSearch(),
+                    () => NeurMaxLocalE.TopSearch(),
+                    () => NeurMaxLocalE.BottomSearch()
                     );
                     // Find the nearest value in Input vector in relation to the node.
                     NeurMaxLocalE.CompareDistances();
@@ -286,7 +288,9 @@ namespace WpfApp1
                     // Search for the weight of the neighbour node.
                     Parallel.Invoke(
                     () => NeighMaxLocalE.ForwardSearch(),
-                    () => NeighMaxLocalE.BackwardSearch()
+                    () => NeighMaxLocalE.BackwardSearch(),
+                    () => NeighMaxLocalE.TopSearch(),
+                    () => NeighMaxLocalE.BottomSearch()
                     );
                     // Find the nearest value in Input vector in relation to the node.
                     NeighMaxLocalE.CompareDistances();
@@ -347,7 +351,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -358,7 +362,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X += ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -378,7 +382,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X -= (ParentNeur.Delta - (ParentNeur.Neur_Y * ParentNeur.Neur_X));
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();
@@ -389,7 +393,7 @@ namespace WpfApp1
                     ParentNeur.Neur_X -= ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurIndInInput = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
                     // Changing coordinates for visualisation
                     ParentNeur.ChangePosition();

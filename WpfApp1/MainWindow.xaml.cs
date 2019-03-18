@@ -49,8 +49,14 @@ namespace WpfApp1
         public static int debug1;
         public static int debug2;
         public static int debug3;
+        // index
         public static int debug4;
         public static bool _Left;
+
+        // the nearest pixel's rgb
+        public static int near1;
+        public static int near2;
+        public static int near3;
 
         //image to open
         public static System.Drawing.Bitmap _image { get; set; }
@@ -505,6 +511,10 @@ namespace WpfApp1
            // TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
            // TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
             TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
+
+            TextBox1.Text += $"nearest pixel 1= {near1}" + "\r\n";
+            TextBox1.Text += $"nearest pixel 2= {near2}" + "\r\n";
+            TextBox1.Text += $"nearest pixel 3= {near3}" + "\r\n";
             TextBox1.ScrollToEnd();
         }
 
