@@ -123,7 +123,9 @@ namespace WpfApp1
 
                 Parallel.Invoke(
                     () => Winner.ForwardSearch(),
-                    () => Winner.BackwardSearch()
+                    () => Winner.BackwardSearch(),
+                    () => Winner.TopSearch(),
+                    () => Winner.BottomSearch()
                 );
                 // Finding shortest distance that will be the weight of the winner node.
                 Winner.CompareDistances();
@@ -335,40 +337,44 @@ namespace WpfApp1
                 ParentNeur.Delta *= Eps_n;
             }
 
-            // If neuron's position is to the left of the input array increase coordinates' values by the amount of Delta value
-            if (ParentNeur.Left == false)
+            if (ParentNeur.Left == false )
             {
-                // Calculate the increase value (check whether delta + x is out of Vpw borders)
-                float IncRowsL = (ParentNeur.Delta + ParentNeur.Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
-
-                // When Delta is out of the X limit, increase Y
-                if (IncRowsL > 1)
+                // If input array is to the right from the neuron's position increase coordinates' values by the amount of Delta value
+                if ((ParentNeur.Top == false) && (ParentNeur.Bottom == false))
                 {
-                    // Increasing Y by the amount of rows            
-                    ParentNeur.Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
+                    // Calculate the increase value (check whether delta + x is out of Vpw borders)
+                    float IncRowsL = (ParentNeur.Delta + ParentNeur.Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
 
-                    // Reducing Delta value by the amount of rows for further increase of the X value
-                    ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
+                    // When Delta is out of the X limit, increase Y
+                    if (IncRowsL > 1)
+                    {
+                        // Increasing Y by the amount of rows            
+                        ParentNeur.Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
 
-                    // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                        // Reducing Delta value by the amount of rows for further increase of the X value
+                        ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
 
-                    // Changing coordinates for visualisation
-                    ParentNeur.ChangePosition();
-                }
-                else
-                {
-                    // Increasing X value by the amount of Delta value
-                    ParentNeur.Neur_X += ParentNeur.Delta;
+                        // Assigning new Index value due to the change in coordinates
+                        ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
 
-                    // Assigning new Index value due to the change in coordinates
-                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                        // Changing coordinates for visualisation
+                        ParentNeur.ChangePosition();
+                    }
+                    else
+                    {
+                        // Increasing X value by the amount of Delta value
+                        ParentNeur.Neur_X += ParentNeur.Delta;
 
-                    // Changing coordinates for visualisation
-                    ParentNeur.ChangePosition();
+                        // Assigning new Index value due to the change in coordinates
+                        ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                        // Changing coordinates for visualisation
+                        ParentNeur.ChangePosition();
+                    }
                 }
             }
-            else // If neuron's position is to the right of the input array decrease coordinates' values by the amount of Delta value
+            // If input array is to the left from the neuron's position decrease coordinates' values by the amount of Delta value
+            else if (ParentNeur.Left == true) 
             {
                 // Calculate the increase value
                 float IncRowsR = (ParentNeur.Neur_X - ParentNeur.Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!
@@ -391,6 +397,57 @@ namespace WpfApp1
                 {
                     // Decreasing X value by the amount of Delta value
                     ParentNeur.Neur_X -= ParentNeur.Delta;
+
+                    // Assigning new Index value due to the change in coordinates
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                    // Changing coordinates for visualisation
+                    ParentNeur.ChangePosition();
+                }
+            }
+
+            if (ParentNeur.Top == true)
+            {
+                if ((ParentNeur.Neur_Y + ParentNeur.Delta) < MainWindow._image.Height)
+                {
+                    // Increasing Y value by the amount of Delta value
+                    ParentNeur.Neur_Y += ParentNeur.Delta;
+
+                    // Assigning new Index value due to the change in coordinates
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                    // Changing coordinates for visualisation
+                    ParentNeur.ChangePosition();
+                }
+                else
+                {
+                    // If Y is above picture's borders
+                    ParentNeur.Neur_Y = MainWindow._image.Height - MainWindow.NodeScale;
+
+                    // Assigning new Index value due to the change in coordinates
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                    // Changing coordinates for visualisation
+                    ParentNeur.ChangePosition();
+                }
+            }
+            else if (ParentNeur.Bottom == true)
+            {
+                if ((ParentNeur.Neur_Y - ParentNeur.Delta) > 0)
+                {
+                    // Increasing Y value by the amount of Delta value
+                    ParentNeur.Neur_Y -= ParentNeur.Delta;
+
+                    // Assigning new Index value due to the change in coordinates
+                    ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                    // Changing coordinates for visualisation
+                    ParentNeur.ChangePosition();
+                }
+                else
+                {
+                    // If Y is below picture's borders
+                    ParentNeur.Neur_Y = 0;
 
                     // Assigning new Index value due to the change in coordinates
                     ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
@@ -523,8 +580,63 @@ namespace WpfApp1
             // Choosing weight value of each node. 
             if ((parent_node.Left == false) && (child_node.Left == false))
             {
-               Node_R.DistR = (parent_node.DistR + child_node.DistR) / 2;
-               Node_R.Left = false;
+                // If two previous nodes were located to the right from input vector.
+                if ((parent_node.Top == false) && (child_node.Top == false) && (parent_node.Bottom == false) && (child_node.Bottom == false))
+                {
+                    Node_R.DistR = (parent_node.DistR + child_node.DistR) / 2;
+                    Node_R.Left = false;
+                    Node_R.Top = false;
+                    Node_R.Bottom = false;
+                }
+                else if ((parent_node.Top == true) && (child_node.Top == true))
+                {
+                    Node_R.DistT = (parent_node.DistT + child_node.DistT) / 2;
+                    Node_R.Left = false;
+                    Node_R.Top = true;
+                    Node_R.Bottom = false;               
+                }
+                else if ((parent_node.Top == true) && (child_node.Bottom == true))
+                {
+                    if (parent_node.DistT > child_node.DistB)
+                    {
+                        Node_R.DistB = (parent_node.DistT + child_node.DistB) / 2;
+                        Node_R.Left = false;
+                        Node_R.Top = false;
+                        Node_R.Bottom = true;
+                    }
+                    else
+                    {
+                        Node_R.DistT = (parent_node.DistT + child_node.DistB) / 2;
+                        Node_R.Left = false;
+                        Node_R.Top = true;
+                        Node_R.Bottom = false;
+                    }
+                }
+                else if ((parent_node.Bottom == true) && (child_node.Top == true))
+                {
+                    if (parent_node.DistB > child_node.DistT)
+                    {
+                        Node_R.DistT = (parent_node.DistB + child_node.DistT) / 2;
+                        Node_R.Left = false;
+                        Node_R.Top = true;
+                        Node_R.Bottom = false;
+                    }
+                    else
+                    {
+                        Node_R.DistB = (parent_node.DistB + child_node.DistT) / 2;
+                        Node_R.Left = false;
+                        Node_R.Top = false;
+                        Node_R.Bottom = true;
+                    }
+                }
+                else if ((parent_node.Bottom == true) && (child_node.Bottom == true))
+                {
+                    Node_R.DistB = (parent_node.DistB + child_node.DistB) / 2;
+                    Node_R.Left = false;
+                    Node_R.Top = false;
+                    Node_R.Bottom = true;
+                }
+
             }
             else if (((parent_node.Left == true) && (child_node.Left == false)) || ((parent_node.Left == false) && (child_node.Left == true)))
             {
@@ -532,17 +644,23 @@ namespace WpfApp1
                 {
                     Node_R.DistR = (parent_node.DistR + child_node.DistL) / 2;
                     Node_R.Left = false;
+                    Node_R.Top = false;
+                    Node_R.Bottom = false;
                 }
                 else
                 {
                     Node_R.DistL = (parent_node.DistR + child_node.DistL) / 2;
                     Node_R.Left = true;
+                    Node_R.Top = false;
+                    Node_R.Bottom = false;
                 }
             }
             else if ((parent_node.Left == true) && (child_node.Left == true))
             {
                 Node_R.DistL = (parent_node.DistL + child_node.DistL) / 2;
                 Node_R.Left = true;
+                Node_R.Top = false;
+                Node_R.Bottom = false;
             }
 
             // Removing connection between two previous nodes (if such connection exists)
