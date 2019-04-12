@@ -50,9 +50,8 @@ namespace WpfApp1
         public static int debug2;
         public static int debug3;
         // index
-        public static int debug4;
-        public static bool _Left;
-
+        public static int debug_index;
+        
         // the nearest pixel's rgb
         public static int near1;
         public static int near2;
@@ -427,8 +426,8 @@ namespace WpfApp1
             TextBox1.Text += $"debug1 = {debug1} " + "\r\n";
             TextBox1.Text += $"debug2 = {debug2} " + "\r\n";
             TextBox1.Text += $"debug3 = {debug3} " + "\r\n";
-            TextBox1.Text += $"debug index = {debug4} " + "\r\n";
-            TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
+            TextBox1.Text += $"debug index = {debug_index} " + "\r\n";
+
             //TextBox1.Text += $"pixel#2 X = {MainWindow.X_visual} " + "\r\n";
             //TextBox1.Text += $"pixel#2 Y = {MainWindow.Y_visual} " + "\r\n";
             /* TextBox1.Text += $"#2 pixel red = {red} " + "\r\n";
@@ -508,9 +507,10 @@ namespace WpfApp1
             TextBox1.Text += $"pixel#1 Y = { _PositionArr[3].y} " + "\r\n";
             TextBox1.Text += $"pixel#2 X = { _PositionArr[6].x} " + "\r\n";
             TextBox1.Text += $"pixel#2 Y = { _PositionArr[6].y} " + "\r\n";
-           // TextBox1.Text += $"pixel#3 X = { _PositionArr[9].x} " + "\r\n";
-           // TextBox1.Text += $"pixel#3 Y = { _PositionArr[9].y} " + "\r\n";
-            TextBox1.Text += $"debug Left = {MainWindow._Left} " + "\r\n";
+            TextBox1.Text += $"debug1 = {debug1} " + "\r\n";
+            TextBox1.Text += $"debug2 = {debug2} " + "\r\n";
+            TextBox1.Text += $"debug3 = {debug3} " + "\r\n";
+            TextBox1.Text += $"debug index = {debug_index} " + "\r\n";
 
             TextBox1.Text += $"nearest pixel 1= {near1}" + "\r\n";
             TextBox1.Text += $"nearest pixel 2= {near2}" + "\r\n";

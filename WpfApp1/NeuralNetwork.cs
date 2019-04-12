@@ -411,7 +411,7 @@ namespace WpfApp1
                 if ((ParentNeur.Neur_Y + ParentNeur.Delta) < MainWindow._image.Height)
                 {
                     // Increasing Y value by the amount of Delta value
-                    ParentNeur.Neur_Y += ParentNeur.Delta;
+                    ParentNeur.Neur_Y -= ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
                     ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
@@ -436,7 +436,7 @@ namespace WpfApp1
                 if ((ParentNeur.Neur_Y - ParentNeur.Delta) > 0)
                 {
                     // Increasing Y value by the amount of Delta value
-                    ParentNeur.Neur_Y -= ParentNeur.Delta;
+                    ParentNeur.Neur_Y += ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
                     ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);

@@ -146,7 +146,7 @@ namespace WpfApp1
             MainWindow.debug1 = MainWindow.MainInput[4 * NeurInInputIndex + 2];
             MainWindow.debug2 = MainWindow.MainInput[4 * NeurInInputIndex + 1];
             MainWindow.debug3 = MainWindow.MainInput[4 * NeurInInputIndex];
-            MainWindow.debug4 = NeurInInputIndex;
+            MainWindow.debug_index = NeurInInputIndex;
 
             /*
             // Getting the amount of rows by dividing the NeurInInputIndex value by the _image.Width value.
