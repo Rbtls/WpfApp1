@@ -552,7 +552,7 @@ namespace WpfApp1
                 }
                 
                 // Determing the direction where the node should be moved.
-                if (IsFirst == true)
+                if (IsFirst == true) .
                 {
                     if (FirstRgb == DistR)
                     {

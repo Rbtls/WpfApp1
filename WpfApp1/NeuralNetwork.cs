@@ -315,7 +315,7 @@ namespace WpfApp1
             //}
         } //-->ProcessVector
 
-        // Change neuron's and it's neighbours' positions 
+        // Change neuron position 
         public void Adapt_weights(long parent_id, bool isWinner)
         {
             Neuron ParentNeur;
@@ -459,6 +459,7 @@ namespace WpfApp1
             MainWindow.GlRender();
         } //-->Adapt_weights
 
+        // change neuron's neigbours position
         public void MoveNeighbours(long parent_id)   
         {
             Neuron ParentNeur;
