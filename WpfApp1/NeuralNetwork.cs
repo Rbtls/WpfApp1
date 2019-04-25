@@ -89,9 +89,13 @@ namespace WpfApp1
                 Winner = ConnectionsList.ElementAt(0).FirstNeurInConn;
                 SecondWinner = ConnectionsList.ElementAt(0).SecondNeurInConn; ;
             }
+
             foreach (Connection _conn in ConnectionsList)
             {
-                if (_conn.FirstNeurInConn.Error < Error_min)
+                if ((_conn.FirstNeurInConn.DistR == (-1)) &&
+                    (_conn.FirstNeurInConn.DistL == (-1)) &&
+                    (_conn.FirstNeurInConn.DistT == (-1)) &&
+                    (_conn.FirstNeurInConn.DistB == (-1)) && (_conn.FirstNeurInConn.Error <= Error_min))
                 {
                     SecondWinner = Winner;
                     Error_min = _conn.FirstNeurInConn.Error;
@@ -99,7 +103,10 @@ namespace WpfApp1
                 }
                 else if (_conn.SecondNeurInConn != null)
                 {
-                    if (_conn.SecondNeurInConn.Error < Error_min)
+                    if ((_conn.SecondNeurInConn.DistR == (-1)) &&
+                        (_conn.SecondNeurInConn.DistL == (-1)) &&
+                        (_conn.SecondNeurInConn.DistT == (-1)) &&
+                        (_conn.SecondNeurInConn.DistB == (-1)) && (_conn.SecondNeurInConn.Error <= Error_min))
                     {
                         SecondWinner = Winner;
                         Error_min = _conn.SecondNeurInConn.Error;
@@ -134,7 +141,7 @@ namespace WpfApp1
                 Winner.E += Winner.Error;
 
                 //4. Move the winner and all of it's topological neighbours towards _Input vector using Delta value (calculated with Eps_w)
-                Adapt_weights(Winner.NeurId, true);
+                MoveNeur(Winner.NeurId, true);
                 MoveNeighbours(Winner.NeurId);
 
                 //5. Increase age of all connections coming out from the winner (axons) by 1 
@@ -316,7 +323,7 @@ namespace WpfApp1
         } //-->ProcessVector
 
         // Change neuron position 
-        public void Adapt_weights(long parent_id, bool isWinner)
+        public void MoveNeur(long parent_id, bool isWinner)
         {
             Neuron ParentNeur;
 
@@ -457,7 +464,7 @@ namespace WpfApp1
                 }
             }
             MainWindow.GlRender();
-        } //-->Adapt_weights
+        } //-->MoveNeur
 
         // change neuron's neigbours position
         public void MoveNeighbours(long parent_id)   
@@ -478,12 +485,12 @@ namespace WpfApp1
             for (int i = 0; i < ParentNeur.AxonsWeights.Count; i++)
             {
                 // Find neighbours' axons values related to the parent neuron for neighbours' position change towards MainInput
-                Adapt_weights(ParentNeur.AxonsWeights[i].NeighId, false);
+                MoveNeur(ParentNeur.AxonsWeights[i].NeighId, false);
             }
 
             for (int i = 0; i < ParentNeur.SynapsesWeights.Count; i++)
             {
-                Adapt_weights(ParentNeur.SynapsesWeights[i].NeighId, false);
+                MoveNeur(ParentNeur.SynapsesWeights[i].NeighId, false);
             }
         } //-->MoveNeighbours
 

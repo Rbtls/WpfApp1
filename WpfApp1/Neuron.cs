@@ -26,15 +26,15 @@ namespace WpfApp1
         private int PosInd { get; set; }
 
         // nearest value to the left from the node
-        public int DistL { get; set; }
+        public int DistL { get; set; } = -1;
 
-        public int DistR { get; set; }
+        public int DistR { get; set; } = -1;
 
         // nearest value to the top from the node
-        public int DistT { get; set; }
+        public int DistT { get; set; } = -1;
 
         // nearest value to the bottom from the node
-        public int DistB { get; set; }
+        public int DistB { get; set; } = -1;
 
         /* // output axon connection to the id
          public int Next_num { get => next_num; set => next_num = value; }
@@ -51,10 +51,10 @@ namespace WpfApp1
         // previous experience
         public List<PrevExp> Experience { get; set; } = new List<PrevExp>();
 
-        // error
+        // Current error
         public float Error { get; set; }
 
-        // local error (sum of all errors that occured)
+        // local error (sum of all occured errors)
         public float E { get; set; }                
         
         // check direction of search for ProcessDistance method
@@ -236,7 +236,7 @@ namespace WpfApp1
             // rounding the rows value to nearest ten in order to acquire the left border value in the main input vector
             LeftLimit = ((int)(NeurInInputIndex / MainWindow._image.Width)) * MainWindow._image.Width;
             */
-
+                        
             // updating gl buffers in order to redraw nodes' positions
             MainWindow.Change_pos = true;
         } //-->ChangePosition
@@ -265,7 +265,7 @@ namespace WpfApp1
                     
                     // Choosing cell located to the lower-right from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell < RightLimit; Cell -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell > 0; Cell -= MainWindow._image.Width)
                     {
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
@@ -274,7 +274,6 @@ namespace WpfApp1
                                 if (((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0)))
                                 {
                                     DistR = Cell;
-                                    // Calculating the distance between the node and the first color change occurence.
                                     return;
                                 }
 
@@ -296,7 +295,7 @@ namespace WpfApp1
         // Returns the amount of rows from the initial node where pixel color change took place.
         public void BackwardSearch()
         {
-            // checking whether the node has the index value
+           /* // checking whether the node has the index value
             if ((NeurInInputIndex != (-1)))
             {
                 // if there were no matches
@@ -315,7 +314,7 @@ namespace WpfApp1
                     
                     // Choosing cell located to the lower-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > LeftLimit; Cell -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > 0; Cell -= MainWindow._image.Width)
                     {
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
@@ -324,7 +323,6 @@ namespace WpfApp1
                                 if (((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0)))
                                 {
                                     DistL = Cell;
-                                    // Calculating the distance between the node and the first color change occurence.
                                     return;
                                 }
 
@@ -339,17 +337,17 @@ namespace WpfApp1
                         }
                     }
                 }
-            }
+            }*/
         }
 
-        // Looks for the first pixel occurence to the top from the node in the multithread search
+        // Looks for the first pixel occurence to the top from the node in the multithread search (search through the whole row from left to right, then increase the row)
         public void TopSearch()
         {
             // Calculating row width based on the amount of columns
             //float RowWidth = MainWindow._image.Width * MainWindow._pixelSize; 
 
             // Checking whether the node has the index value
-            if (NeurInInputIndex != (-1))
+           /* if (NeurInInputIndex != (-1))
             {
                 // If there were no matches throughout search.
                 DistT = -1;
@@ -372,7 +370,6 @@ namespace WpfApp1
                                 if ((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0))
                                 {
                                     DistT = Cell;
-                                    // Calculating the distance between the node and the first color change occurence.
                                     return;
                                 }
 
@@ -387,13 +384,13 @@ namespace WpfApp1
                         }
                     }
                 }
-            }
+            }*/
         }
 
         public void BottomSearch()
         {
             // Checking whether the node has the index value
-            if ((NeurInInputIndex != (-1)))
+           /* if ((NeurInInputIndex != (-1)))
             {
                 // If there were no matches throughout search.
                 DistB = -1;
@@ -406,7 +403,7 @@ namespace WpfApp1
                     int RightLimit = (NeurInInputIndex + MainWindow._image.Width - 1) + RowLength;
                     // Choosing cell located to the bottom-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell < MainWindow._image.Height; Cell++)
+                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > 0; Cell++)
                     {
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
@@ -416,7 +413,6 @@ namespace WpfApp1
                                 if ((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0))
                                 {
                                     DistB = Cell;
-                                    // Calculating the distance between the node and the first color change occurence.
                                     return;
                                 }
 
@@ -431,10 +427,10 @@ namespace WpfApp1
                         }
                     }
                 }
-            }
+            }*/
         }
 
-        // Searches for the two highest rgb values in MainInput and chooses one with the lowest distance between the node and the value.
+        // Searches for the two highest rgb values in the MainInput vector and chooses one with the lowest distance between the node and the value.
         public void CompareDistances()
         {
             if ((DistR == (-1)) && (DistL == (-1)) && (DistT == (-1)) && (DistB == (-1)))
@@ -529,9 +525,10 @@ namespace WpfApp1
                 bool IsFirst = false;
 
                 // Choosing the nearest distance between the two
-                if (FirstDist < SecondDist)
+                if (FirstDist <= SecondDist)
                 {
-                    E += (int)Math.Pow(Math.Abs((FirstDist) * MainWindow._pixelSize), 2);
+                    // calculating new error value depending on the position of the node in relation to the MainInput vector
+                    Error += (int)Math.Pow(Math.Abs((FirstDist) * MainWindow._pixelSize), 2);
                     // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
                     Delta = NeuralNetwork.Eps_w * ((FirstDist));
                     
@@ -542,7 +539,7 @@ namespace WpfApp1
                 }
                 else
                 {
-                    E += (int)Math.Pow(Math.Abs((SecondDist) * MainWindow._pixelSize), 2);
+                    Error += (int)Math.Pow(Math.Abs((SecondDist) * MainWindow._pixelSize), 2);
                     // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
                     Delta = NeuralNetwork.Eps_w * ((SecondDist));
 
@@ -552,7 +549,7 @@ namespace WpfApp1
                 }
                 
                 // Determing the direction where the node should be moved.
-                if (IsFirst == true) .
+                if (IsFirst == true) 
                 {
                     if (FirstRgb == DistR)
                     {
