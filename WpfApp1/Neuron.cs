@@ -265,7 +265,7 @@ namespace WpfApp1
                     
                     // Choosing cell located to the lower-right from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell > 0; Cell -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell < RightLimit; Cell -= MainWindow._image.Width)
                     {
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
@@ -277,8 +277,8 @@ namespace WpfApp1
                                     return;
                                 }
 
-                                // Move cell to the bottom-left from it's row if it's location reached up limit.                   
-                                if (Cell == UpLimit)
+                                // Move cell to the bottom-right from it's row if it's location reached up limit.                   
+                                if ((Cell == UpLimit) || (Cell < 0))
                                 {
                                     Cell = (Cell + MainWindow._image.Width * RowLength) + MainWindow._image.Width + 1;
                                     UpLimit = UpLimit + MainWindow._image.Width + 1;
