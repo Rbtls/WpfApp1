@@ -262,10 +262,12 @@ namespace WpfApp1
                     // Rounding the rows value to farthest ten in order to acquire the right border value in the main input vector
                     // (a specific search limit in relation to the neuron).
                     int RightLimit = (((int)(NeurInInputIndex / MainWindow._image.Width) + 1) * MainWindow._image.Width) + 1;
-                    
+
+                    // Lowering RightLimit by row width to correlate with cell position
+                    RightLimit += MainWindow._image.Width;
                     // Choosing cell located to the lower-right from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell < RightLimit; Cell -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell < RightLimit; Cell -= MainWindow._image.Width, RightLimit -= MainWindow._image.Width)
                     {
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
@@ -281,6 +283,7 @@ namespace WpfApp1
                                 if ((Cell == UpLimit) || (Cell < 0))
                                 {
                                     Cell = (Cell + MainWindow._image.Width * RowLength) + MainWindow._image.Width + 1;
+                                    RightLimit += (MainWindow._image.Width * RowLength) + MainWindow._image.Width;
                                     UpLimit = UpLimit + MainWindow._image.Width + 1;
                                     RowLength += 2;
                                 }
