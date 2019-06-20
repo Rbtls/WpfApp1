@@ -60,10 +60,10 @@ namespace WpfApp1
         // check direction of search for ProcessDistance method
         public bool Forward { get; set; }
 
-        // location of node compared to MainInput vector (Left == true => Increase Delta value in Adapt_weights function)
-        public bool Left { get; set; }
-        public bool Top { get; set; }
-        public bool Bottom { get; set; }
+        // location of node compared to MainInput vector (LeftNode == true => Increase Delta value in Adapt_weights function)
+        public bool LeftNode { get; set; }
+        public bool TopNode { get; set; }
+        public bool BottomNode { get; set; }
 
         // thread lock for use in multithread search
         private static object locker = new object();
@@ -147,15 +147,6 @@ namespace WpfApp1
             MainWindow.debug2 = MainWindow.MainInput[4 * NeurInInputIndex + 1];
             MainWindow.debug3 = MainWindow.MainInput[4 * NeurInInputIndex];
             MainWindow.debug_index = NeurInInputIndex;
-
-            /*
-            // Getting the amount of rows by dividing the NeurInInputIndex value by the _image.Width value.
-            // Rounding the rows value to farthest ten in order to acquire the right border value in the main input vector
-            // (a specific search limit in relation to the neuron).
-            RightLimit = (((int)(NeurInInputIndex / MainWindow._image.Width) + 1) * MainWindow._image.Width) + 1;
-            // rounding the rows value to nearest ten in order to acquire the left border value in the main input vector
-            LeftLimit = ((int)(NeurInInputIndex / MainWindow._image.Width)) * MainWindow._image.Width;
-            */
 
         } //-->Neuron
 
@@ -246,7 +237,7 @@ namespace WpfApp1
         public void ForwardSearch()
         {
             // checking whether the node has the index value
-            if ((NeurInInputIndex != (-1)))
+            /*if ((NeurInInputIndex != (-1)))
             {
                 // if there were no matches
                 DistR = -1;
@@ -291,14 +282,14 @@ namespace WpfApp1
                         }
                     }
                 }
-            }
+            }*/
         }
 
         // Finds weight of the node if there's a change in pixel color to the left of the node. Used in the multithread search of first occurence of pixel color change.
         // Returns the amount of rows from the initial node where pixel color change took place.
         public void BackwardSearch()
         {
-           /* // checking whether the node has the index value
+            // checking whether the node has the index value
             if ((NeurInInputIndex != (-1)))
             {
                 // if there were no matches
@@ -314,10 +305,12 @@ namespace WpfApp1
                     // Getting the amount of rows by dividing the NeurInInputIndex value by the _image.Width value.
                     // rounding the rows value to nearest ten in order to acquire the left border value in the main input vector
                     int LeftLimit = ((int)(NeurInInputIndex / MainWindow._image.Width)) * MainWindow._image.Width;
-                    
+
+                    // Lowering LeftLimit by row width to correlate with cell position
+                    LeftLimit += MainWindow._image.Width;
                     // Choosing cell located to the lower-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > 0; Cell -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > LeftLimit; Cell -= MainWindow._image.Width, LeftLimit -= MainWindow._image.Width)
                     {
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
@@ -333,6 +326,7 @@ namespace WpfApp1
                                 if (Cell == UpLimit)
                                 {
                                     Cell = (Cell + MainWindow._image.Width * RowLength) + MainWindow._image.Width - 1;
+                                    LeftLimit += (MainWindow._image.Width * RowLength) + MainWindow._image.Width;
                                     UpLimit = UpLimit + MainWindow._image.Width - 1;
                                     RowLength += 2;
                                 }
@@ -340,7 +334,7 @@ namespace WpfApp1
                         }
                     }
                 }
-            }*/
+            }
         }
 
         // Looks for the first pixel occurence to the top from the node in the multithread search (search through the whole row from left to right, then increase the row)
@@ -556,54 +550,54 @@ namespace WpfApp1
                 {
                     if (FirstRgb == DistR)
                     {
-                        Left = false;
-                        Top = false;
-                        Bottom = false;
+                        LeftNode = false;
+                        TopNode = false;
+                        BottomNode = false;
                     }
                     else if (FirstRgb == DistL)
                     {
-                        Left = true;
-                        Top = false;
-                        Bottom = false;
+                        LeftNode = true;
+                        TopNode = false;
+                        BottomNode = false;
                     }
                     else if (FirstRgb == DistT)
                     {
-                        Left = false;
-                        Top = true;
-                        Bottom = false;
+                        LeftNode = false;
+                        TopNode = true;
+                        BottomNode = false;
                     }
                     else
                     {
-                        Left = false;
-                        Top = false;
-                        Bottom = true;
+                        LeftNode = false;
+                        TopNode = false;
+                        BottomNode = true;
                     }
                 }
                 else
                 {
                     if (SecondRgb == DistR)
                     {
-                        Left = false;
-                        Top = false;
-                        Bottom = false;
+                        LeftNode = false;
+                        TopNode = false;
+                        BottomNode = false;
                     }
                     else if (SecondRgb == DistL)
                     {
-                        Left = true;
-                        Top = false;
-                        Bottom = false;
+                        LeftNode = true;
+                        TopNode = false;
+                        BottomNode = false;
                     }
                     else if (SecondRgb == DistT)
                     {
-                        Left = false;
-                        Top = true;
-                        Bottom = false;
+                        LeftNode = false;
+                        TopNode = true;
+                        BottomNode = false;
                     }
                     else
                     {
-                        Left = false;
-                        Top = false;
-                        Bottom = true;
+                        LeftNode = false;
+                        TopNode = false;
+                        BottomNode = true;
                     }
                 }
             }

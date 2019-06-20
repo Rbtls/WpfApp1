@@ -344,10 +344,21 @@ namespace WpfApp1
                 ParentNeur.Delta *= Eps_n;
             }
 
-            if (ParentNeur.Left == false )
+            // Check Delta value
+            if (ParentNeur.Delta < 0)
+            {
+                ParentNeur.Delta *= (-1);
+            }
+            // If Delta value is out of the borders
+            while (ParentNeur.Delta > 1)
+            {
+                ParentNeur.Delta *= 0.1f;
+            }
+
+            if (ParentNeur.LeftNode == false )
             {
                 // If input array is to the right from the neuron's position increase coordinates' values by the amount of Delta value
-                if ((ParentNeur.Top == false) && (ParentNeur.Bottom == false))
+                if ((ParentNeur.TopNode == false) && (ParentNeur.BottomNode == false))
                 {
                     // Calculate the increase value (check whether delta + x is out of Vpw borders)
                     float IncRowsL = (ParentNeur.Delta + ParentNeur.Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
@@ -381,7 +392,7 @@ namespace WpfApp1
                 }
             }
             // If input array is to the left from the neuron's position decrease coordinates' values by the amount of Delta value
-            else if (ParentNeur.Left == true) 
+            else if (ParentNeur.LeftNode == true) 
             {
                 // Calculate the increase value
                 float IncRowsR = (ParentNeur.Neur_X - ParentNeur.Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!
@@ -413,7 +424,7 @@ namespace WpfApp1
                 }
             }
 
-            if (ParentNeur.Top == true)
+            if (ParentNeur.TopNode == true)
             {
                 if ((ParentNeur.Neur_Y + ParentNeur.Delta) < MainWindow._image.Height)
                 {
@@ -438,7 +449,7 @@ namespace WpfApp1
                     ParentNeur.ChangePosition();
                 }
             }
-            else if (ParentNeur.Bottom == true)
+            else if (ParentNeur.BottomNode == true)
             {
                 if ((ParentNeur.Neur_Y - ParentNeur.Delta) > 0)
                 {
@@ -586,89 +597,89 @@ namespace WpfApp1
 
             // Weight of R (the distance between the node and the main input vector) equals sum of weights of two previous nodes divided by two.
             // Choosing weight value of each node. 
-            if ((parent_node.Left == false) && (child_node.Left == false))
+            if ((parent_node.LeftNode == false) && (child_node.LeftNode == false))
             {
                 // If two previous nodes were located to the right from input vector.
-                if ((parent_node.Top == false) && (child_node.Top == false) && (parent_node.Bottom == false) && (child_node.Bottom == false))
+                if ((parent_node.TopNode == false) && (child_node.TopNode == false) && (parent_node.BottomNode == false) && (child_node.BottomNode == false))
                 {
                     Node_R.DistR = (parent_node.DistR + child_node.DistR) / 2;
-                    Node_R.Left = false;
-                    Node_R.Top = false;
-                    Node_R.Bottom = false;
+                    Node_R.LeftNode = false;
+                    Node_R.TopNode = false;
+                    Node_R.BottomNode = false;
                 }
-                else if ((parent_node.Top == true) && (child_node.Top == true))
+                else if ((parent_node.TopNode == true) && (child_node.TopNode == true))
                 {
                     Node_R.DistT = (parent_node.DistT + child_node.DistT) / 2;
-                    Node_R.Left = false;
-                    Node_R.Top = true;
-                    Node_R.Bottom = false;               
+                    Node_R.LeftNode = false;
+                    Node_R.TopNode = true;
+                    Node_R.BottomNode = false;               
                 }
-                else if ((parent_node.Top == true) && (child_node.Bottom == true))
+                else if ((parent_node.TopNode == true) && (child_node.BottomNode == true))
                 {
                     if (parent_node.DistT > child_node.DistB)
                     {
                         Node_R.DistB = (parent_node.DistT + child_node.DistB) / 2;
-                        Node_R.Left = false;
-                        Node_R.Top = false;
-                        Node_R.Bottom = true;
+                        Node_R.LeftNode = false;
+                        Node_R.TopNode = false;
+                        Node_R.BottomNode = true;
                     }
                     else
                     {
                         Node_R.DistT = (parent_node.DistT + child_node.DistB) / 2;
-                        Node_R.Left = false;
-                        Node_R.Top = true;
-                        Node_R.Bottom = false;
+                        Node_R.LeftNode = false;
+                        Node_R.TopNode = true;
+                        Node_R.BottomNode = false;
                     }
                 }
-                else if ((parent_node.Bottom == true) && (child_node.Top == true))
+                else if ((parent_node.BottomNode == true) && (child_node.TopNode == true))
                 {
                     if (parent_node.DistB > child_node.DistT)
                     {
                         Node_R.DistT = (parent_node.DistB + child_node.DistT) / 2;
-                        Node_R.Left = false;
-                        Node_R.Top = true;
-                        Node_R.Bottom = false;
+                        Node_R.LeftNode = false;
+                        Node_R.TopNode = true;
+                        Node_R.BottomNode = false;
                     }
                     else
                     {
                         Node_R.DistB = (parent_node.DistB + child_node.DistT) / 2;
-                        Node_R.Left = false;
-                        Node_R.Top = false;
-                        Node_R.Bottom = true;
+                        Node_R.LeftNode = false;
+                        Node_R.TopNode = false;
+                        Node_R.BottomNode = true;
                     }
                 }
-                else if ((parent_node.Bottom == true) && (child_node.Bottom == true))
+                else if ((parent_node.BottomNode == true) && (child_node.BottomNode == true))
                 {
                     Node_R.DistB = (parent_node.DistB + child_node.DistB) / 2;
-                    Node_R.Left = false;
-                    Node_R.Top = false;
-                    Node_R.Bottom = true;
+                    Node_R.LeftNode = false;
+                    Node_R.TopNode = false;
+                    Node_R.BottomNode = true;
                 }
 
             }
-            else if (((parent_node.Left == true) && (child_node.Left == false)) || ((parent_node.Left == false) && (child_node.Left == true)))
+            else if (((parent_node.LeftNode == true) && (child_node.LeftNode == false)) || ((parent_node.LeftNode == false) && (child_node.LeftNode == true)))
             {
                 if (parent_node.DistL > child_node.DistR)
                 {
                     Node_R.DistR = (parent_node.DistR + child_node.DistL) / 2;
-                    Node_R.Left = false;
-                    Node_R.Top = false;
-                    Node_R.Bottom = false;
+                    Node_R.LeftNode = false;
+                    Node_R.TopNode = false;
+                    Node_R.BottomNode = false;
                 }
                 else
                 {
                     Node_R.DistL = (parent_node.DistR + child_node.DistL) / 2;
-                    Node_R.Left = true;
-                    Node_R.Top = false;
-                    Node_R.Bottom = false;
+                    Node_R.LeftNode = true;
+                    Node_R.TopNode = false;
+                    Node_R.BottomNode = false;
                 }
             }
-            else if ((parent_node.Left == true) && (child_node.Left == true))
+            else if ((parent_node.LeftNode == true) && (child_node.LeftNode == true))
             {
                 Node_R.DistL = (parent_node.DistL + child_node.DistL) / 2;
-                Node_R.Left = true;
-                Node_R.Top = false;
-                Node_R.Bottom = false;
+                Node_R.LeftNode = true;
+                Node_R.TopNode = false;
+                Node_R.BottomNode = false;
             }
 
             // Removing connection between two previous nodes (if such connection exists)
