@@ -36,6 +36,9 @@ namespace WpfApp1
         // nearest value to the bottom from the node
         public int DistB { get; set; } = -1;
 
+        // minimal distance for the winner neuron that will be used for the next winner search
+        public int MinDist { get; set; } = -1;
+
         /* // output axon connection to the id
          public int Next_num { get => next_num; set => next_num = value; }
 
@@ -227,8 +230,8 @@ namespace WpfApp1
             // rounding the rows value to nearest ten in order to acquire the left border value in the main input vector
             LeftLimit = ((int)(NeurInInputIndex / MainWindow._image.Width)) * MainWindow._image.Width;
             */
-                        
-            // updating gl buffers in order to redraw nodes' positions
+            
+            // Updating gl buffers in order to redraw nodes' positions
             MainWindow.Change_pos = true;
         } //-->ChangePosition
         
@@ -237,7 +240,7 @@ namespace WpfApp1
         public void ForwardSearch()
         {
             // checking whether the node has the index value
-            /*if ((NeurInInputIndex != (-1)))
+            if ((NeurInInputIndex != (-1)))
             {
                 // if there were no matches
                 DistR = -1;
@@ -282,8 +285,8 @@ namespace WpfApp1
                         }
                     }
                 }
-            }*/
-        }
+            }
+        } //-->ForwardSearch()
 
         // Finds weight of the node if there's a change in pixel color to the left of the node. Used in the multithread search of first occurence of pixel color change.
         // Returns the amount of rows from the initial node where pixel color change took place.
@@ -335,16 +338,16 @@ namespace WpfApp1
                     }
                 }
             }
-        }
+        } //-->BackwardSearch()
 
-        // Looks for the first pixel occurence to the top from the node in the multithread search (search through the whole row from left to right, then increase the row)
+        // Looks for the first pixel occurence to the top from the node in the multithread search (search through the row from left to right, then increase the row)
         public void TopSearch()
         {
             // Calculating row width based on the amount of columns
             //float RowWidth = MainWindow._image.Width * MainWindow._pixelSize; 
 
             // Checking whether the node has the index value
-           /* if (NeurInInputIndex != (-1))
+            /*if (NeurInInputIndex != (-1))
             {
                 // If there were no matches throughout search.
                 DistT = -1;
@@ -354,7 +357,11 @@ namespace WpfApp1
                 lock (locker)
                 {
                     // Creating right limit for the triangular search area.
+                    // RightLimit for the TopSearch differs from that of the ForwardSearch. Here it symbolizes the end of each row of the triangular search area.
                     int RightLimit = (NeurInInputIndex - MainWindow._image.Width - 1) + RowLength;
+                    // Lowering RightLimit by row width to correlate with cell position
+                    RightLimit += MainWindow._image.Width;
+                                        
                     // Choosing cell located to the upper-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
                     for (int Cell = (NeurInInputIndex - MainWindow._image.Width - 1); Cell > 0; Cell++)
@@ -382,7 +389,7 @@ namespace WpfApp1
                     }
                 }
             }*/
-        }
+        } //-->TopSearch()
 
         public void BottomSearch()
         {
@@ -425,7 +432,7 @@ namespace WpfApp1
                     }
                 }
             }*/
-        }
+        } //-->BottomSearch()
 
         // Searches for the two highest rgb values in the MainInput vector and chooses one with the lowest distance between the node and the value.
         public void CompareDistances()
@@ -553,24 +560,28 @@ namespace WpfApp1
                         LeftNode = false;
                         TopNode = false;
                         BottomNode = false;
+                        MinDist = DistR;
                     }
                     else if (FirstRgb == DistL)
                     {
                         LeftNode = true;
                         TopNode = false;
                         BottomNode = false;
+                        MinDist = DistL;
                     }
                     else if (FirstRgb == DistT)
                     {
                         LeftNode = false;
                         TopNode = true;
                         BottomNode = false;
+                        MinDist = DistT;
                     }
                     else
                     {
                         LeftNode = false;
                         TopNode = false;
                         BottomNode = true;
+                        MinDist = DistB;
                     }
                 }
                 else
@@ -580,24 +591,28 @@ namespace WpfApp1
                         LeftNode = false;
                         TopNode = false;
                         BottomNode = false;
+                        MinDist = DistR;
                     }
                     else if (SecondRgb == DistL)
                     {
                         LeftNode = true;
                         TopNode = false;
                         BottomNode = false;
+                        MinDist = DistL;
                     }
                     else if (SecondRgb == DistT)
                     {
                         LeftNode = false;
                         TopNode = true;
                         BottomNode = false;
+                        MinDist = DistT;
                     }
                     else
                     {
                         LeftNode = false;
                         TopNode = false;
                         BottomNode = true;
+                        MinDist = DistB;
                     }
                 }
             }

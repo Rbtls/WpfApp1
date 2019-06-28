@@ -83,34 +83,67 @@ namespace WpfApp1
 
         private void FindWinners() 
         {
+            // First two newly created neurons
             if (Error_min == 0)
             {
                 Error_min = ConnectionsList.ElementAt(0).FirstNeurInConn.Error;
                 Winner = ConnectionsList.ElementAt(0).FirstNeurInConn;
-                SecondWinner = ConnectionsList.ElementAt(0).SecondNeurInConn; ;
+                SecondWinner = ConnectionsList.ElementAt(0).SecondNeurInConn; 
             }
 
             foreach (Connection _conn in ConnectionsList)
             {
-                if ((_conn.FirstNeurInConn.DistR == (-1)) &&
-                    (_conn.FirstNeurInConn.DistL == (-1)) &&
-                    (_conn.FirstNeurInConn.DistT == (-1)) &&
-                    (_conn.FirstNeurInConn.DistB == (-1)) && (_conn.FirstNeurInConn.Error <= Error_min))
+                if ((MainWindow.MainInput[4 * _conn.FirstNeurInConn.NeurInInputIndex] == 0) &&
+                    (MainWindow.MainInput[4 * _conn.FirstNeurInConn.NeurInInputIndex + 1] == 0) &&
+                    (MainWindow.MainInput[4 * _conn.FirstNeurInConn.NeurInInputIndex + 2] == 0))
                 {
-                    SecondWinner = Winner;
-                    Error_min = _conn.FirstNeurInConn.Error;
-                    Winner = _conn.FirstNeurInConn;
+                    if ((_conn.FirstNeurInConn.DistR == (-1)) &&
+                        (_conn.FirstNeurInConn.DistL == (-1)) &&
+                        (_conn.FirstNeurInConn.DistT == (-1)) &&
+                        (_conn.FirstNeurInConn.DistB == (-1)) &&
+                        (_conn.FirstNeurInConn.Error <= Error_min))
+                    {
+                        SecondWinner = Winner;
+                        Error_min = _conn.FirstNeurInConn.Error;
+                        Winner = _conn.FirstNeurInConn;
+                    }
+                    else if ((_conn.FirstNeurInConn.DistR < Winner.MinDist) ||
+                                (_conn.FirstNeurInConn.DistL < Winner.MinDist) ||
+                                (_conn.FirstNeurInConn.DistT < Winner.MinDist) ||
+                                (_conn.FirstNeurInConn.DistB < Winner.MinDist) &&
+                                (_conn.FirstNeurInConn.Error <= Error_min))
+                    {
+                        SecondWinner = Winner;
+                        Error_min = _conn.FirstNeurInConn.Error;
+                        Winner = _conn.FirstNeurInConn;
+                    }
                 }
                 else if (_conn.SecondNeurInConn != null)
                 {
-                    if ((_conn.SecondNeurInConn.DistR == (-1)) &&
-                        (_conn.SecondNeurInConn.DistL == (-1)) &&
-                        (_conn.SecondNeurInConn.DistT == (-1)) &&
-                        (_conn.SecondNeurInConn.DistB == (-1)) && (_conn.SecondNeurInConn.Error <= Error_min))
+                    if ((MainWindow.MainInput[4 * _conn.SecondNeurInConn.NeurInInputIndex] == 0) &&
+                        (MainWindow.MainInput[4 * _conn.SecondNeurInConn.NeurInInputIndex + 1] == 0) &&
+                        (MainWindow.MainInput[4 * _conn.SecondNeurInConn.NeurInInputIndex + 2] == 0))
                     {
-                        SecondWinner = Winner;
-                        Error_min = _conn.SecondNeurInConn.Error;
-                        Winner = _conn.SecondNeurInConn;
+                        if ((_conn.SecondNeurInConn.DistR == (-1)) &&
+                            (_conn.SecondNeurInConn.DistL == (-1)) &&
+                            (_conn.SecondNeurInConn.DistT == (-1)) &&
+                            (_conn.SecondNeurInConn.DistB == (-1)) &&
+                            (_conn.SecondNeurInConn.Error <= Error_min))
+                        {
+                            SecondWinner = Winner;
+                            Error_min = _conn.SecondNeurInConn.Error;
+                            Winner = _conn.SecondNeurInConn;
+                        }
+                        else if ((_conn.SecondNeurInConn.DistR < Winner.MinDist) ||
+                                    (_conn.SecondNeurInConn.DistL < Winner.MinDist) ||
+                                    (_conn.SecondNeurInConn.DistT < Winner.MinDist) ||
+                                    (_conn.SecondNeurInConn.DistB < Winner.MinDist) &&
+                                    (_conn.SecondNeurInConn.Error <= Error_min))
+                        {
+                            SecondWinner = Winner;
+                            Error_min = _conn.SecondNeurInConn.Error;
+                            Winner = _conn.SecondNeurInConn;
+                        }
                     }
                 }
             }
@@ -126,8 +159,11 @@ namespace WpfApp1
                 //1.
                 FindWinners();
 
+            if ((MainWindow.MainInput[4 * Winner.NeurInInputIndex] == 0) &&
+                (MainWindow.MainInput[4 * Winner.NeurInInputIndex + 1] == 0) &&
+                (MainWindow.MainInput[4 * Winner.NeurInInputIndex + 2] == 0))
+            {
                 //2. Searching for the nearest value in the _Input vector (this way we can calculate the distance between the node and the value)
-
                 Parallel.Invoke(
                     () => Winner.ForwardSearch(),
                     () => Winner.BackwardSearch(),
@@ -196,6 +232,7 @@ namespace WpfApp1
                         IsConnected = true;
                     }
                 }
+            }
 
                 //7. Remove all connections with age greater than Age_max.
                 // Trigger sygnaling the end of foreach search to stop reiteration of aforementioned search.
@@ -354,6 +391,10 @@ namespace WpfApp1
             {
                 ParentNeur.Delta *= 0.1f;
             }
+
+            ////////////////////////////////////////////
+            ParentNeur.Delta *= 0.1f;                                   // DELETE THIS 
+            ///////////////////////////////////////////
 
             if (ParentNeur.LeftNode == false )
             {
@@ -534,10 +575,13 @@ namespace WpfApp1
             foreach (ConnWeights _synapse in NeurMaxLocalE.SynapsesWeights)
             {
                 Neuron Neighbour = FindNeuron(_synapse.NeighId);
-                if (Neighbour.E > MaxLocalE)
+                if (Neighbour != null)
                 {
-                    MaxLocalE = Neighbour.E;
-                    NeighMaxLocalE = Neighbour;
+                    if (Neighbour.E > MaxLocalE)
+                    {
+                        MaxLocalE = Neighbour.E;
+                        NeighMaxLocalE = Neighbour;
+                    }
                 }
             }
             foreach (ConnWeights _axon in NeurMaxLocalE.AxonsWeights)
