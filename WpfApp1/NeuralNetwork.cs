@@ -117,6 +117,19 @@ namespace WpfApp1
                         Error_min = _conn.FirstNeurInConn.Error;
                         Winner = _conn.FirstNeurInConn;
                     }
+                    // if there's no other fitting criteria
+                    else if (_conn.FirstNeurInConn.Error <= Error_min)
+                    {
+                        SecondWinner = Winner;
+                        Error_min = _conn.FirstNeurInConn.Error;
+                        Winner = _conn.FirstNeurInConn;
+                    }
+                    else
+                    {
+                        SecondWinner = Winner;
+                        Error_min = _conn.FirstNeurInConn.Error;
+                        Winner = _conn.FirstNeurInConn;
+                    }
                 }
                 else if (_conn.SecondNeurInConn != null)
                 {
@@ -139,6 +152,19 @@ namespace WpfApp1
                                     (_conn.SecondNeurInConn.DistT < Winner.MinDist) ||
                                     (_conn.SecondNeurInConn.DistB < Winner.MinDist) &&
                                     (_conn.SecondNeurInConn.Error <= Error_min))
+                        {
+                            SecondWinner = Winner;
+                            Error_min = _conn.SecondNeurInConn.Error;
+                            Winner = _conn.SecondNeurInConn;
+                        }
+                        // if there's no other fitting criteria
+                        else if (_conn.FirstNeurInConn.Error <= Error_min)
+                        {
+                            SecondWinner = Winner;
+                            Error_min = _conn.SecondNeurInConn.Error;
+                            Winner = _conn.SecondNeurInConn;
+                        }
+                        else
                         {
                             SecondWinner = Winner;
                             Error_min = _conn.SecondNeurInConn.Error;
@@ -321,7 +347,7 @@ namespace WpfApp1
                     // Among the neighbours with the largest local error find the one with the largest local error.
                     Neuron NeighMaxLocalE = FindNeighMaxLocalError(ref NeurMaxLocalE);
 
-                    // Search for the weight of the node (DistL & DistR values).
+                    // Search for the weight of the node to calculate weight of the newly created node.
                     Parallel.Invoke(
                     () => NeurMaxLocalE.ForwardSearch(),
                     () => NeurMaxLocalE.BackwardSearch(),
@@ -331,7 +357,7 @@ namespace WpfApp1
                     // Find the nearest value in Input vector in relation to the node.
                     NeurMaxLocalE.CompareDistances();
 
-                    // Search for the weight of the neighbour node.
+                    // Search for the weight of the neighbour node to calculate weight of the newly created node.
                     Parallel.Invoke(
                     () => NeighMaxLocalE.ForwardSearch(),
                     () => NeighMaxLocalE.BackwardSearch(),
@@ -340,9 +366,10 @@ namespace WpfApp1
                     );
                     // Find the nearest value in Input vector in relation to the node.
                     NeighMaxLocalE.CompareDistances();
-                                       
-                    // Create new neuron between two previous neurons and replace connections accordingly.
-                    // Reduce error values of the previous neurons and replace error value of the newly placed neuron.
+
+                // Create new neuron between two previous nodes and replace connections
+                // by removing old connections between two previous nodes and adding new connections between new node and two previous nodes.
+                // Reduce error values of the previous neurons and replace error value of the newly placed neuron.
                     InsertNeuron(ref NeurMaxLocalE, ref NeighMaxLocalE);        
                 }
                 else if (NeursCount == 2)
@@ -582,15 +609,24 @@ namespace WpfApp1
                         MaxLocalE = Neighbour.E;
                         NeighMaxLocalE = Neighbour;
                     }
+                    // if MaxLocalE hasn't changed and still equals 0 (we need this in order to find at least one neighbour even if it's error == 0)
+                    else if (Neighbour.E == MaxLocalE)
+                    {
+                        MaxLocalE = Neighbour.E;
+                        NeighMaxLocalE = Neighbour;
+                    }
                 }
             }
             foreach (ConnWeights _axon in NeurMaxLocalE.AxonsWeights)
             {
                 Neuron Neighbour = FindNeuron(_axon.NeighId);
-                if (Neighbour.E > MaxLocalE)
+                if (Neighbour != null)
                 {
-                    MaxLocalE = Neighbour.E;
-                    NeighMaxLocalE = Neighbour;
+                    if (Neighbour.E > MaxLocalE)
+                    {
+                        MaxLocalE = Neighbour.E;
+                        NeighMaxLocalE = Neighbour;
+                    }
                 }
             }
             return ref NeighMaxLocalE;

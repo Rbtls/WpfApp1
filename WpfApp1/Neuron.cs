@@ -347,7 +347,7 @@ namespace WpfApp1
             //float RowWidth = MainWindow._image.Width * MainWindow._pixelSize; 
 
             // Checking whether the node has the index value
-            /*if (NeurInInputIndex != (-1))
+            if (NeurInInputIndex != (-1))
             {
                 // If there were no matches throughout search.
                 DistT = -1;
@@ -388,13 +388,13 @@ namespace WpfApp1
                         }
                     }
                 }
-            }*/
+            }
         } //-->TopSearch()
 
         public void BottomSearch()
         {
             // Checking whether the node has the index value
-           /* if ((NeurInInputIndex != (-1)))
+            if ((NeurInInputIndex != (-1)))
             {
                 // If there were no matches throughout search.
                 DistB = -1;
@@ -431,7 +431,7 @@ namespace WpfApp1
                         }
                     }
                 }
-            }*/
+            }
         } //-->BottomSearch()
 
         // Searches for the two highest rgb values in the MainInput vector and chooses one with the lowest distance between the node and the value.
