@@ -428,31 +428,74 @@ namespace WpfApp1
                 // If input array is to the right from the neuron's position increase coordinates' values by the amount of Delta value
                 if ((ParentNeur.TopNode == false) && (ParentNeur.BottomNode == false))
                 {
+                   
                     // Calculate the increase value (check whether delta + x is out of Vpw borders)
                     float IncRowsL = (ParentNeur.Delta + ParentNeur.Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
 
                     // When Delta is out of the X limit, increase Y
                     if (IncRowsL > 1)
                     {
-                        // Increasing Y by the amount of rows            
-                        ParentNeur.Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
+                        int first_iteration = 0;
 
-                        // Reducing Delta value by the amount of rows for further increase of the X value
-                        ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
+                        // After node's movement check whether node overlaps previous node(s). Repeat until node's rgb will be different from 255 0 255
+                        do
+                        {
+                            // if after increment of Neur_X & Neur_Y the node overlaps previous node(s)
+                            if (first_iteration == 1)
+                            {
+                                ParentNeur.Neur_X -= (1.0f * MainWindow.NodeScale);
 
-                        // Assigning new Index value due to the change in coordinates
-                        ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                                // Assigning new Index value due to the change in coordinates
+                                ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                            }
+                            else
+                            {
+                                // Increasing Y by the amount of rows            
+                                ParentNeur.Neur_Y += (int)IncRowsL / MainWindow._pixelSize;
 
+                                // Reducing Delta value by the amount of rows for further increase of the X value
+                                ParentNeur.Neur_X += (ParentNeur.Delta - (int)IncRowsL);
+
+                                // Assigning new Index value due to the change in coordinates
+                                ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                                first_iteration = 1;
+                            }
+                        } while ((MainWindow.MainInput[4 * ParentNeur.NeurInInputIndex] == 255) &&
+                        (MainWindow.MainInput[4 * ParentNeur.NeurInInputIndex + 1] == 0) &&
+                        (MainWindow.MainInput[4 * ParentNeur.NeurInInputIndex + 2] == 255));
+                        
                         // Changing coordinates for visualisation
                         ParentNeur.ChangePosition();
                     }
                     else
                     {
-                        // Increasing X value by the amount of Delta value
-                        ParentNeur.Neur_X += ParentNeur.Delta;
+                        int first_iteration = 0;
 
-                        // Assigning new Index value due to the change in coordinates
-                        ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                        // After node's movement check whether node overlaps previous node(s). Repeat until node's rgb will be different from 255 0 255
+                        do
+                        {
+                            // if after increment of Neur_X & Neur_Y the node overlaps previous node(s)
+                            if (first_iteration == 1)
+                            {
+                                ParentNeur.Neur_X -= (1.0f * MainWindow.NodeScale);
+
+                                // Assigning new Index value due to the change in coordinates
+                                ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+                            }
+                            else
+                            {
+                                // Increasing X value by the amount of Delta value
+                                ParentNeur.Neur_X += ParentNeur.Delta;
+
+                                // Assigning new Index value due to the change in coordinates
+                                ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
+
+                                first_iteration = 1;
+                            }
+                        } while ((MainWindow.MainInput[4 * ParentNeur.NeurInInputIndex] == 255) &&
+                        (MainWindow.MainInput[4 * ParentNeur.NeurInInputIndex + 1] == 0) &&
+                        (MainWindow.MainInput[4 * ParentNeur.NeurInInputIndex + 2] == 255));
 
                         // Changing coordinates for visualisation
                         ParentNeur.ChangePosition();

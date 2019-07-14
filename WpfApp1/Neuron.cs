@@ -210,7 +210,7 @@ namespace WpfApp1
 
             MainWindow.X_visual = Neur_X;
             MainWindow.Y_visual = Neur_Y;
-
+            
             MainWindow._Position[PosInd] = new OpenGL.Vertex3f(((0.0f * MainWindow.NodeScale) + MainWindow.X_visual),
                ((0.0f * MainWindow.NodeScale) + MainWindow.Y_visual), 0.0f);
             MainWindow._Position[PosInd + 1] = new OpenGL.Vertex3f(((0.5f * MainWindow.NodeScale) + MainWindow.X_visual),

@@ -512,9 +512,9 @@ namespace WpfApp1
             TextBox1.Text += $"debug3 = {debug3} " + "\r\n";
             TextBox1.Text += $"debug index = {debug_index} " + "\r\n";
 
-            TextBox1.Text += $"nearest pixel 1= {near1}" + "\r\n";
-            TextBox1.Text += $"nearest pixel 2= {near2}" + "\r\n";
-            TextBox1.Text += $"nearest pixel 3= {near3}" + "\r\n";
+           // TextBox1.Text += $"nearest pixel 1= {near1}" + "\r\n";
+            //TextBox1.Text += $"nearest pixel 2= {near2}" + "\r\n";
+          //  TextBox1.Text += $"nearest pixel 3= {near3}" + "\r\n";
             TextBox1.ScrollToEnd();
         }
 
