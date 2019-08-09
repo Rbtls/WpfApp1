@@ -25,6 +25,7 @@ namespace WpfApp1
         //eps_w & eps_n are used to adapt weights
         public static float Eps_w { get; set; }
         public static float Eps_n { get; set; }
+        public System.Windows.Controls.TextBox H = new System.Windows.Controls.TextBox();
 
         public LinkedList<Connection> ConnectionsList = new LinkedList<Connection>();
 
@@ -423,12 +424,15 @@ namespace WpfApp1
             ParentNeur.Delta *= 0.1f;                                   // DELETE THIS 
             ///////////////////////////////////////////
 
+            
+            
             if (ParentNeur.LeftNode == false )
             {
+                H.Text = "NOT_LEFT\r\n";
                 // If input array is to the right from the neuron's position increase coordinates' values by the amount of Delta value
                 if ((ParentNeur.TopNode == false) && (ParentNeur.BottomNode == false))
                 {
-                   
+                    H.Text = "RIGHT\r\n";
                     // Calculate the increase value (check whether delta + x is out of Vpw borders)
                     float IncRowsL = (ParentNeur.Delta + ParentNeur.Neur_X) / (MainWindow.Vpw - (2 * MainWindow._frame)); //should be vpw - borders!
 
@@ -505,6 +509,8 @@ namespace WpfApp1
             // If input array is to the left from the neuron's position decrease coordinates' values by the amount of Delta value
             else if (ParentNeur.LeftNode == true) 
             {
+                H.Text = "LEFT\r\n";
+
                 // Calculate the increase value
                 float IncRowsR = (ParentNeur.Neur_X - ParentNeur.Delta) / (MainWindow.Vpw - 2 * MainWindow._frame); //should be vpw - borders!
 
@@ -537,10 +543,12 @@ namespace WpfApp1
 
             if (ParentNeur.TopNode == true)
             {
+                H.Text = "TOP\r\n";
+
                 if ((ParentNeur.Neur_Y + ParentNeur.Delta) < MainWindow._image.Height)
                 {
                     // Increasing Y value by the amount of Delta value
-                    ParentNeur.Neur_Y -= ParentNeur.Delta;
+                    ParentNeur.Neur_Y += ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
                     ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
@@ -562,10 +570,12 @@ namespace WpfApp1
             }
             else if (ParentNeur.BottomNode == true)
             {
+                H.Text = "BOTTOM\r\n";
+
                 if ((ParentNeur.Neur_Y - ParentNeur.Delta) > 0)
                 {
                     // Increasing Y value by the amount of Delta value
-                    ParentNeur.Neur_Y += ParentNeur.Delta;
+                    ParentNeur.Neur_Y -= ParentNeur.Delta;
 
                     // Assigning new Index value due to the change in coordinates
                     ParentNeur.NeurInInputIndex = MainWindow.CalculateIndex(ParentNeur.Neur_X, ParentNeur.Neur_Y);
@@ -575,6 +585,8 @@ namespace WpfApp1
                 }
                 else
                 {
+                    H.Text = "ELSE\r\n";
+
                     // If Y is below picture's borders
                     ParentNeur.Neur_Y = 0;
 
