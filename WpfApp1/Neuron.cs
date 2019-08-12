@@ -36,8 +36,16 @@ namespace WpfApp1
         // nearest value to the bottom from the node
         public int DistB { get; set; } = -1;
 
+        // value needed for multithread search to stop (return if 1)
+        public int StopSearch { get; set; } = 0;
+
         // minimal distance for the winner neuron that will be used for the next winner search
         public int MinDist { get; set; } = -1;
+
+        // using variables to store image's width/height in order to remove get method from multithread call
+        public int ImageHeight { get; set; } = MainWindow._image.Height; 
+
+        public int ImageWidth { get; set; } = MainWindow._image.Width;
 
         /* // output axon connection to the id
          public int Next_num { get => next_num; set => next_num = value; }
@@ -247,44 +255,61 @@ namespace WpfApp1
                 // Initializing length of the first row (minus first cell).
                 int RowLength = 2;
 
-                lock (locker)
-                {
+                //lock (locker)
+                //{
                     // Creating up limit for the triangular search area.
-                    int UpLimit = (NeurInInputIndex - MainWindow._image.Width + 1);
+                    int UpLimit = (NeurInInputIndex - ImageWidth + 1);
                     
                     // Getting the amount of rows by dividing the NeurInInputIndex value by the _image.Width value.
                     // Rounding the rows value to farthest ten in order to acquire the right border value in the main input vector
                     // (a specific search limit in relation to the neuron).
-                    int RightLimit = (((int)(NeurInInputIndex / MainWindow._image.Width) + 1) * MainWindow._image.Width) + 1;
+                    int RightLimit = (((int)(NeurInInputIndex / ImageWidth) + 1) * ImageWidth) + 1;
 
                     // Lowering RightLimit by row width to correlate with cell position
-                    RightLimit += MainWindow._image.Width;
+                    RightLimit += ImageWidth;
                     // Choosing cell located to the lower-right from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width + 1); Cell < RightLimit; Cell -= MainWindow._image.Width, RightLimit -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + ImageWidth + 1); Cell < RightLimit; Cell -= ImageWidth, RightLimit -= ImageWidth)
                     {
+                        if (StopSearch == 1)
+                        {
+                            return;
+                        }
+
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
                             if ((Cell >= 0) && ((Cell * 4) >= 0))
                             {
                                 if (((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0)))
                                 {
-                                    DistR = Cell;
+                                    if (StopSearch != 1)
+                                    {
+                                        StopSearch = 1;
+                                        DistR = Cell;
+                                    LeftNode = false;
+                                    TopNode = false;
+                                    BottomNode = false;
+                                    MinDist = DistR;
                                     return;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 // Move cell to the bottom-right from it's row if it's location reached up limit.                   
                                 if ((Cell == UpLimit) || (Cell < 0))
                                 {
-                                    Cell = (Cell + MainWindow._image.Width * RowLength) + MainWindow._image.Width + 1;
-                                    RightLimit += (MainWindow._image.Width * RowLength) + MainWindow._image.Width;
-                                    UpLimit = UpLimit + MainWindow._image.Width + 1;
+                                    Cell = (Cell + ImageWidth * RowLength) + ImageWidth + 1;
+                                    RightLimit += (ImageWidth * RowLength) + ImageWidth;
+                                    UpLimit = UpLimit + ImageWidth + 1;
                                     RowLength += 2;
                                 }
                             }
                         }
                     }
-                }
+               //}
             }
         } //-->ForwardSearch()
 
@@ -300,43 +325,60 @@ namespace WpfApp1
                 // Initializing length of the first row (minus first cell).
                 int RowLength = 2;
 
-                lock (locker)
-                {
+               // lock (locker)
+                //{
                     // Creating up limit for the triangular search area.
-                    int UpLimit = (NeurInInputIndex - MainWindow._image.Width - 1);
+                    int UpLimit = (NeurInInputIndex - ImageWidth - 1);
                     
                     // Getting the amount of rows by dividing the NeurInInputIndex value by the _image.Width value.
                     // rounding the rows value to nearest ten in order to acquire the left border value in the main input vector
-                    int LeftLimit = ((int)(NeurInInputIndex / MainWindow._image.Width)) * MainWindow._image.Width;
+                    int LeftLimit = ((int)(NeurInInputIndex / ImageWidth)) * ImageWidth;
 
                     // Lowering LeftLimit by row width to correlate with cell position
-                    LeftLimit += MainWindow._image.Width;
+                    LeftLimit += ImageWidth;
                     // Choosing cell located to the lower-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > LeftLimit; Cell -= MainWindow._image.Width, LeftLimit -= MainWindow._image.Width)
+                    for (int Cell = (NeurInInputIndex + ImageWidth - 1); Cell > LeftLimit; Cell -= ImageWidth, LeftLimit -= ImageWidth)
                     {
+                        if (StopSearch == 1)
+                        {
+                            return;
+                        }
+
                         if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
                             if ((Cell >= 0) && ((Cell * 4) >= 0))
                             {
                                 if (((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0)))
                                 {
-                                    DistL = Cell;
+                                    if (StopSearch != 1)
+                                    {
+                                        StopSearch = 1;
+                                        DistL = Cell;
+                                    LeftNode = true;
+                                    TopNode = false;
+                                    BottomNode = false;
+                                    MinDist = DistL;
                                     return;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 // Move cell to the bottom-left from it's row if it's location reached up limit.                   
                                 if (Cell == UpLimit)
                                 {
-                                    Cell = (Cell + MainWindow._image.Width * RowLength) + MainWindow._image.Width - 1;
-                                    LeftLimit += (MainWindow._image.Width * RowLength) + MainWindow._image.Width;
-                                    UpLimit = UpLimit + MainWindow._image.Width - 1;
+                                    Cell = (Cell + ImageWidth * RowLength) + ImageWidth - 1;
+                                    LeftLimit += (ImageWidth * RowLength) + ImageWidth;
+                                    UpLimit = UpLimit + ImageWidth - 1;
                                     RowLength += 2;
                                 }
                             }
                         }
                     }
-                }
+                //}
             }
         } //-->BackwardSearch()
 
@@ -354,18 +396,23 @@ namespace WpfApp1
                 // Initializing length of the first row (minus first cell).
                 int RowLength = 2;
 
-                lock (locker)
-                {
+                //lock (locker)
+                //{
                     // Creating right limit for the triangular search area.
                     // RightLimit for the TopSearch differs from that of the ForwardSearch. Here it symbolizes the end of each row of the triangular search area.
-                    int RightLimit = (NeurInInputIndex - MainWindow._image.Width - 1) + RowLength;
+                    int RightLimit = (NeurInInputIndex - ImageWidth - 1) + RowLength;
                     // Lowering RightLimit by row width to correlate with cell position
-                    RightLimit += MainWindow._image.Width;
+                    RightLimit += ImageWidth;
                                         
                     // Choosing cell located to the upper-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex - MainWindow._image.Width - 1); Cell > 0; Cell++)
+                    for (int Cell = (NeurInInputIndex - ImageWidth - 1); Cell > 0; Cell++)
                     {
+                        if(StopSearch == 1)
+                        {
+                            return;
+                        }
+
                         if ((Cell >= 0) && ((Cell * 4) >= 0))
                         {
                             if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
@@ -373,21 +420,33 @@ namespace WpfApp1
                                 // Quit search if first pixel occurence took place.
                                 if ((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0))
                                 {
-                                    DistT = Cell;
+                                    if (StopSearch != 1)
+                                    {
+                                        StopSearch = 1;
+                                        DistT = Cell;
+                                    LeftNode = false;
+                                    TopNode = true;
+                                    BottomNode = false;
+                                    MinDist = DistT;
                                     return;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 // Move cell to the upper-left from it's row if it's location reached right limit.                   
                                 if (Cell == RightLimit)
                                 {
-                                    Cell = (Cell - RowLength) - MainWindow._image.Width - 1;
-                                    RightLimit = RightLimit - MainWindow._image.Width + 1;
+                                    Cell = (Cell - RowLength) - ImageWidth - 1;
+                                    RightLimit = RightLimit - ImageWidth + 1;
                                     RowLength += 2;
                                 }
                             }
                         }
                     }
-                }
+                //}
             }
         } //-->TopSearch()
 
@@ -401,222 +460,93 @@ namespace WpfApp1
                 // Initializing length of the first row (minus first cell).
                 int RowLength = 2;
 
-                lock (locker)
-                {
+                //lock (locker)
+                //{
                     // Creating right limit for the triangular search area.
-                    int RightLimit = (NeurInInputIndex + MainWindow._image.Width - 1) + RowLength;
+                    int RightLimit = (NeurInInputIndex + ImageWidth - 1) + RowLength;
                     // Choosing cell located to the bottom-left from the cell occupied by the neuron.
                     // Using search in each cell of the triangular shaped area.
-                    for (int Cell = (NeurInInputIndex + MainWindow._image.Width - 1); Cell > 0; Cell++)
+                    for (int Cell = (NeurInInputIndex + ImageWidth - 1); Cell > 0; Cell++)
                     {
-                        if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
+                        if (StopSearch == 1)
+                        {
+                            return;
+                        }
+
+                            if (((Cell * 4) + 2) < (MainWindow.MainInput.Length - 1))
                         {
                             if ((Cell >= 0) && ((Cell * 4) >= 0))
                             {
                                 // Quit search if first pixel occurence took place.
                                 if ((MainWindow.MainInput[4 * Cell] > 0) || (MainWindow.MainInput[(4 * Cell) + 1] > 0) || (MainWindow.MainInput[(4 * Cell) + 2] > 0))
                                 {
-                                    DistB = Cell;
+                                    if (StopSearch != 1)
+                                    {
+                                        StopSearch = 1;
+                                        DistB = Cell;
+                                    LeftNode = false;
+                                    TopNode = false;
+                                    BottomNode = true;
+                                    MinDist = DistB;
                                     return;
+                                    }
+                                    else
+                                    {
+                                        return;
+                                    }
                                 }
 
                                 // Move cell to the lower-left from it's row if it's location reached right limit.                   
                                 if (Cell == RightLimit)
                                 {
-                                    Cell = (Cell - RowLength) + MainWindow._image.Width - 1;
-                                    RightLimit = RightLimit + MainWindow._image.Width + 1;
+                                    Cell = (Cell - RowLength) + ImageWidth - 1;
+                                    RightLimit = RightLimit + ImageWidth + 1;
                                     RowLength += 2;
                                 }
                             }
                         }
                     }
-                }
+                //}
             }
         } //-->BottomSearch()
 
         // Searches for the two highest rgb values in the MainInput vector and chooses one with the lowest distance between the node and the value.
         public void CompareDistances()
         {
-            if ((DistR == (-1)) && (DistL == (-1)) && (DistT == (-1)) && (DistB == (-1)))
+            int FirstDist;
+            int FirstRgb = 0;
+
+            if (MinDist == DistR)
             {
-                // If there were no matches;
-                return;
+                FirstDist = DistR - NeurInInputIndex;
+                FirstRgb = DistR;
+            }
+            else if (MinDist == DistL)
+            {
+                FirstDist = NeurInInputIndex - DistL;
+                FirstRgb = DistL;
+            }
+            else if (MinDist == DistT)
+            {
+                FirstDist = (DistT - NeurInInputIndex) / MainWindow._image.Width;
+                FirstRgb = DistT;
             }
             else
             {
-                // First two values with highest rgb rate.
-                int FirstRgb = DistR;
-                int SecondRgb = DistR;
-
-                // Searching for the first two highest rgb values among distance search results.
-                int[] DistArr = { DistR, DistL, DistT, DistB };
-
-                foreach (int i in DistArr)
-                {
-                    if (i != (-1))
-                    {
-                        FirstRgb = i;
-                        SecondRgb = i;
-                        break;
-                    }
-                }
-
-                foreach (int i in DistArr)
-                {
-                    if (i != (-1))
-                    {
-                        // If rgb values are higher change the variable with max values.
-                        if (((MainWindow.MainInput[4 * i] + MainWindow.MainInput[4 * i + 1] + MainWindow.MainInput[4 * i + 2]) / 3)
-                        > ((MainWindow.MainInput[4 * FirstRgb] + MainWindow.MainInput[4 * FirstRgb + 1] + MainWindow.MainInput[4 * FirstRgb + 2]) / 3))
-                        {
-                            FirstRgb = i;
-                        }
-                        if (i != FirstRgb)
-                        {
-                            if (FirstRgb == SecondRgb)
-                            {
-                                SecondRgb = i;
-                            }
-                            else if (((MainWindow.MainInput[4 * i] + MainWindow.MainInput[4 * i + 1] + MainWindow.MainInput[4 * i + 2]) / 3)
-                            > ((MainWindow.MainInput[4 * SecondRgb] + MainWindow.MainInput[4 * SecondRgb + 1] + MainWindow.MainInput[4 * SecondRgb + 2]) / 3))
-                            {
-                                SecondRgb = i;
-                            }
-                        }
-                    }
-                }
-
-                // Distances' variables needed for further comparison
-                int FirstDist;
-                int SecondDist;
-  
-                // Calculating distances for both values depending on the location.
-                if (FirstRgb == DistR)
-                {
-                    FirstDist = DistR - NeurInInputIndex;
-                }
-                else if (FirstRgb == DistL)
-                {
-                    FirstDist = NeurInInputIndex - DistL;
-                }
-                else if (FirstRgb == DistT)
-                {
-                    FirstDist = (DistT - NeurInInputIndex) / MainWindow._image.Width;
-                }
-                else
-                {
-                    FirstDist = (NeurInInputIndex - DistB) / MainWindow._image.Width;
-                }
-
-                if (SecondRgb == DistR)
-                {
-                    SecondDist = DistR - NeurInInputIndex;
-                }
-                else if (SecondRgb == DistL)
-                {
-                    SecondDist = NeurInInputIndex - DistL;
-                }
-                else if (SecondRgb == DistT)
-                {
-                    SecondDist = (DistT - NeurInInputIndex) / MainWindow._image.Width;
-                }
-                else
-                {
-                    SecondDist = (NeurInInputIndex - DistB) / MainWindow._image.Width;
-                }
-
-                // Variable used for further location determination (right, left, top or bottom). 
-                bool IsFirst = false;
-
-                // Choosing the nearest distance between the two
-                if (FirstDist <= SecondDist)
-                {
-                    // calculating new error value depending on the position of the node in relation to the MainInput vector
-                    Error += (int)Math.Pow(Math.Abs((FirstDist) * MainWindow._pixelSize), 2);
-                    // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
-                    Delta = NeuralNetwork.Eps_w * ((FirstDist));
-                    
-                    MainWindow.near1 = MainWindow.MainInput[4 * FirstRgb];
-                    MainWindow.near2 = MainWindow.MainInput[4 * FirstRgb + 1];
-                    MainWindow.near3 = MainWindow.MainInput[4 * FirstRgb + 2];
-                    IsFirst = true;
-                }
-                else
-                {
-                    Error += (int)Math.Pow(Math.Abs((SecondDist) * MainWindow._pixelSize), 2);
-                    // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
-                    Delta = NeuralNetwork.Eps_w * ((SecondDist));
-
-                    MainWindow.near1 = MainWindow.MainInput[4 * SecondRgb];
-                    MainWindow.near2 = MainWindow.MainInput[4 * SecondRgb + 1];
-                    MainWindow.near3 = MainWindow.MainInput[4 * SecondRgb + 2];
-                }
-                
-                // Determing the direction where the node should be moved.
-                if (IsFirst == true) 
-                {
-                    if (FirstRgb == DistR)
-                    {
-                        LeftNode = false;
-                        TopNode = false;
-                        BottomNode = false;
-                        MinDist = DistR;
-                    }
-                    else if (FirstRgb == DistL)
-                    {
-                        LeftNode = true;
-                        TopNode = false;
-                        BottomNode = false;
-                        MinDist = DistL;
-                    }
-                    else if (FirstRgb == DistT)
-                    {
-                        LeftNode = false;
-                        TopNode = true;
-                        BottomNode = false;
-                        MinDist = DistT;
-                    }
-                    else
-                    {
-                        LeftNode = false;
-                        TopNode = false;
-                        BottomNode = true;
-                        MinDist = DistB;
-                    }
-                }
-                else
-                {
-                    if (SecondRgb == DistR)
-                    {
-                        LeftNode = false;
-                        TopNode = false;
-                        BottomNode = false;
-                        MinDist = DistR;
-                    }
-                    else if (SecondRgb == DistL)
-                    {
-                        LeftNode = true;
-                        TopNode = false;
-                        BottomNode = false;
-                        MinDist = DistL;
-                    }
-                    else if (SecondRgb == DistT)
-                    {
-                        LeftNode = false;
-                        TopNode = true;
-                        BottomNode = false;
-                        MinDist = DistT;
-                    }
-                    else
-                    {
-                        LeftNode = false;
-                        TopNode = false;
-                        BottomNode = true;
-                        MinDist = DistB;
-                    }
-                }
+                FirstDist = (NeurInInputIndex - DistB) / MainWindow._image.Width;
+                FirstRgb = DistB;
             }
-        } //-->CompareDistances
+
+            // calculating new error value depending on the position of the node in relation to the MainInput vector
+            Error += (int)Math.Pow(Math.Abs((FirstDist) * MainWindow._pixelSize), 2);
+            // Changing Delta (distance) in order to move winner and it's synapses as well as it's neighbours and their axons
+            Delta = NeuralNetwork.Eps_w * ((FirstDist));
+
+            MainWindow.near1 = MainWindow.MainInput[4 * FirstRgb];
+            MainWindow.near2 = MainWindow.MainInput[4 * FirstRgb + 1];
+            MainWindow.near3 = MainWindow.MainInput[4 * FirstRgb + 2];
+
+        } //-->CompareDistances   
 
     } //-->Neuron
 

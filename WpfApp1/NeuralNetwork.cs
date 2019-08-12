@@ -191,6 +191,9 @@ namespace WpfApp1
                 (MainWindow.MainInput[4 * Winner.NeurInInputIndex + 2] == 0))
             {
                 //2. Searching for the nearest value in the _Input vector (this way we can calculate the distance between the node and the value)
+                // Initializing search trigger to stop wait after the value has been found
+                Winner.StopSearch = 0; 
+
                 Parallel.Invoke(
                     () => Winner.ForwardSearch(),
                     () => Winner.BackwardSearch(),
@@ -349,6 +352,8 @@ namespace WpfApp1
                     Neuron NeighMaxLocalE = FindNeighMaxLocalError(ref NeurMaxLocalE);
 
                     // Search for the weight of the node to calculate weight of the newly created node.
+                    NeurMaxLocalE.StopSearch = 0;
+
                     Parallel.Invoke(
                     () => NeurMaxLocalE.ForwardSearch(),
                     () => NeurMaxLocalE.BackwardSearch(),
@@ -357,8 +362,10 @@ namespace WpfApp1
                     );
                     // Find the nearest value in Input vector in relation to the node.
                     NeurMaxLocalE.CompareDistances();
-
+                    
                     // Search for the weight of the neighbour node to calculate weight of the newly created node.
+                    NeighMaxLocalE.StopSearch = 0;   
+
                     Parallel.Invoke(
                     () => NeighMaxLocalE.ForwardSearch(),
                     () => NeighMaxLocalE.BackwardSearch(),
